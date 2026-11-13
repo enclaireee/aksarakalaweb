@@ -15,6 +15,12 @@ const EMBERS = [
   { left: "93%", top: "78%", delay: "2.8s", color: "#5ef2ff" },
 ];
 
+// Hard 1px dark pixel outline so chrome stays legible over bright and dark scenes alike.
+const INK =
+  "[text-shadow:1px_0_0_#090612,-1px_0_0_#090612,0_1px_0_#090612,0_-1px_0_#090612,1px_1px_0_#090612,-1px_-1px_0_#090612,1px_-1px_0_#090612,-1px_1px_0_#090612]";
+const INK_IMG =
+  "[filter:drop-shadow(1px_0_0_#090612)_drop-shadow(-1px_0_0_#090612)_drop-shadow(0_1px_0_#090612)_drop-shadow(0_-1px_0_#090612)]";
+
 /** Fixed layer over every scene: header controls, scene rail, drifting embers. */
 export function SiteChrome() {
   const { lang, toggleLang } = useLanguage();
@@ -71,7 +77,7 @@ export function SiteChrome() {
             alt="Aksara Kala"
             width={140}
             height={84}
-            className="pixelated h-10 w-auto"
+            className={`pixelated h-10 w-auto ${INK_IMG}`}
           />
         </button>
 
@@ -80,7 +86,7 @@ export function SiteChrome() {
             type="button"
             onClick={toggleAudio}
             aria-pressed={playing}
-            className={`font-pixel cursor-pointer text-xs tracking-wider transition-colors ${
+            className={`font-pixel ${INK} cursor-pointer text-xs tracking-wider transition-colors ${
               playing ? "text-[#5ef2ff]" : "text-[#f8f4ec]/65 hover:text-[#fce09b]"
             }`}
           >
@@ -89,7 +95,7 @@ export function SiteChrome() {
           <button
             type="button"
             onClick={toggleLang}
-            className="font-pixel cursor-pointer text-xs tracking-wider text-[#f8f4ec]/75 transition-colors hover:text-[#fce09b]"
+            className={`font-pixel ${INK} cursor-pointer text-xs tracking-wider text-[#f8f4ec]/75 transition-colors hover:text-[#fce09b]`}
           >
             {lang === "en" ? "EN | id" : "en | ID"}
           </button>
@@ -99,7 +105,7 @@ export function SiteChrome() {
             className={`font-pixel cursor-pointer border border-[#fce09b] px-3 py-1.5 text-xs tracking-wider transition-all duration-300 ${
               atEnd
                 ? "pointer-events-none opacity-0"
-                : "bg-[#fce09b] text-[#090612] shadow-[0_0_18px_rgba(252,224,155,0.35)] hover:scale-105"
+                : "bg-[#fce09b] text-[#090612] shadow-[0_0_0_1px_#090612,0_0_18px_rgba(252,224,155,0.35)] hover:scale-105"
             }`}
           >
             {lang === "en" ? "Download" : "Unduh"}
@@ -123,7 +129,7 @@ export function SiteChrome() {
               className="group flex cursor-pointer items-center gap-2"
             >
               <span
-                className={`font-pixel text-[10px] tracking-wider text-[#fce09b] transition-opacity ${
+                className={`font-pixel ${INK} text-[10px] tracking-wider text-[#fce09b] transition-opacity ${
                   on ? "opacity-90" : "opacity-0 group-hover:opacity-90"
                 }`}
               >
@@ -132,8 +138,8 @@ export function SiteChrome() {
               <span
                 className={`h-2 w-2 border transition-all ${
                   on
-                    ? "scale-125 border-[#5ef2ff] bg-[#5ef2ff] shadow-[0_0_10px_#5ef2ff]"
-                    : "border-[#f8f4ec]/40 group-hover:border-[#fce09b]"
+                    ? "scale-125 border-[#5ef2ff] bg-[#5ef2ff] shadow-[0_0_0_1px_#090612,0_0_10px_#5ef2ff]"
+                    : "border-[#f8f4ec]/40 shadow-[0_0_0_1px_#090612] group-hover:border-[#fce09b]"
                 }`}
               />
             </button>

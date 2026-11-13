@@ -254,6 +254,9 @@ export function JourneyScene() {
         />
         <Layer id="back" before={<Ground />} />
 
+        {/* Near silhouettes sit behind the hero so they never hide it */}
+        <Layer id="near" />
+
         {/* The hero marches in place while the world slides past */}
         <div className={s.hero}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -282,7 +285,6 @@ export function JourneyScene() {
         </div>
 
         <Layer id="front" />
-        <Layer id="near" />
 
         <div className={s.grade} />
         <div className={s.maw} />

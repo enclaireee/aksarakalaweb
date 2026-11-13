@@ -193,11 +193,11 @@
   top: 46%;
 }
 .glyph_la {
-  left: 56%;
+  left: min(56%, calc(100% - 58 * var(--u) - 24px));
   top: 50%;
 }
 .glyph_ja {
-  left: 78%;
+  left: min(78%, calc(100% - 32 * var(--u) - 12px));
   top: 46.5%;
 }
 

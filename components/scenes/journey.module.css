@@ -50,19 +50,8 @@
     #c4dcab 70%
   );
 }
-.skyGaluh {
-  opacity: var(--s2);
-  background: linear-gradient(
-    to bottom,
-    #2d0a18 0%,
-    #6e1b22 26%,
-    #b9442a 46%,
-    #ea8f37 59%,
-    #fcd684 70%
-  );
-}
 .skyMataram {
-  opacity: var(--s3);
+  opacity: var(--s2);
   background: linear-gradient(
     to bottom,
     #4b3a55 0%,
@@ -72,19 +61,8 @@
     #fbe7bd 70%
   );
 }
-.skyTimur {
-  opacity: var(--s4);
-  background: linear-gradient(
-    to bottom,
-    #4a200f 0%,
-    #8f4416 26%,
-    #c9781f 46%,
-    #eaa844 59%,
-    #f7d993 70%
-  );
-}
 .skyKidul {
-  opacity: var(--s5);
+  opacity: var(--s3);
   background: linear-gradient(
     to bottom,
     #031a27 0%,
@@ -95,7 +73,7 @@
   );
 }
 .skyKala {
-  opacity: var(--s6);
+  opacity: var(--s4);
   background: linear-gradient(
     to bottom,
     #090612 0%,
@@ -171,7 +149,7 @@
   image-rendering: auto;
 }
 .eclipse {
-  opacity: var(--s6);
+  opacity: var(--s4);
 }
 
 .mist {

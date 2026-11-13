@@ -12,16 +12,14 @@
 const ART = "/game/art";
 
 /** Distance the hero covers across the scene, in u. */
-export const TRAVEL = 2960;
+export const TRAVEL = 2040;
 /** Height of the ground band (6 tile rows of 16u). */
 export const GROUND_H = 96;
 
 export type RegionId =
   | "purwa"
   | "sunda"
-  | "galuh"
   | "mataram"
-  | "timur"
   | "kidul"
   | "kala";
 
@@ -51,11 +49,9 @@ export interface Region {
 export const REGIONS: Region[] = [
   { id: "purwa", art: "sunda", a: -260, b: 200, rows: [0, 0, 1, 1, 0, 0] },
   { id: "sunda", art: "sunda", a: 200, b: 660, rows: [0, 0, 1, 1, 0, 0] },
-  { id: "galuh", art: "galuh", a: 660, b: 1120, rows: [0, 1, 2, 2, 1, 0] },
-  { id: "mataram", art: "mataram", a: 1120, b: 1580, rows: [0, 0, 2, 2, 0, 0] },
-  { id: "timur", art: "timur", a: 1580, b: 2040, rows: [0, 3, 1, 1, 3, 3] },
-  { id: "kidul", art: "kidul", a: 2040, b: 2500, rows: [3, 3, 4, 4, 3, 3] },
-  { id: "kala", art: "kala", a: 2500, b: 3480, rows: [0, 3, 2, 2, 3, 0] },
+  { id: "mataram", art: "mataram", a: 660, b: 1120, rows: [0, 0, 2, 2, 0, 0] },
+  { id: "kidul", art: "kidul", a: 1120, b: 1580, rows: [3, 3, 4, 4, 3, 3] },
+  { id: "kala", art: "kala", a: 1580, b: 2560, rows: [0, 3, 2, 2, 3, 0] },
 ];
 
 /** --p at which the hero steps into each region (after purwa). */
@@ -163,17 +159,13 @@ const props = (names: string[], art: string) => names.map((n) => prop(n, art));
 
 const STORY: Record<string, Def> = {
   tangkuban: [`${ART}/story/tangkuban_perahu.png`, 36, 26],
-  gapura: [`${ART}/story/gapura.png`, 38, 36],
   candi: [`${ART}/story/candi_seribu.png`, 36, 32],
-  tengger: [`${ART}/story/tengger_lautan_pasir.png`, 26, 34],
   nyiRoro: [`${ART}/story/nyi_roro_kidul.png`, 32, 32],
   veil: [`${ART}/story/eclipse_veil.png`, 48, 40],
   crater: [`${ART}/story/crater_seal.png`, 26, 28],
-  galuhRuin: [`${ART}/story/galuh.png`, 32, 26],
   kalaStone: [`${ART}/story/batara_kala.png`, 28, 28],
   well: [`${ART}/story/purwa_well.png`, 28, 30],
   stageLamps: [`${ART}/story/purwa_stage_lamps.png`, 50, 42],
-  pillar: [`${ART}/props/pillar.png`, 18, 36],
   stake: [`${ART}/props/curse_stake.png`, 36, 24],
 };
 const petilasan = (art: string): Def => [
@@ -342,20 +334,6 @@ const torch = (b: number): Omit<Critter, "x"> => ({
   motion: "none",
 });
 
-const fire = (b: number): Omit<Critter, "x"> => ({
-  src: `${ART}/ambient/fire.png`,
-  fw: 12,
-  fh: 14,
-  sw: 48,
-  sh: 14,
-  frames: 4,
-  row: 0,
-  fps: 8,
-  scale: 1,
-  b,
-  motion: "none",
-});
-
 const kalaEye = (b: number): Omit<Critter, "x"> => ({
   src: `${ART}/world_fx/kala_eye.png`,
   fw: 10,
@@ -430,18 +408,6 @@ const FLORA: Record<RegionId, Flora> = {
     front: ["bush", "bamboo", "rock_l", "tree_teak"],
     near: ["bamboo", "tree_banyan", "bamboo"],
   },
-  galuh: {
-    ridge: ["tree_spire", "tree_teak"],
-    ridgeN: 5,
-    mid: ["tree_teak", "tree_teak", "tree_palm", "tree_acacia", "candi_pillar"],
-    midN: 13,
-    back: ["tree_teak", "tree_palm", "lantern", "lantern", "candi_pillar", "shrine"],
-    backN: 13,
-    edge: ["bush", "lantern", "candi_block", "jar"],
-    deco: [...TUFTS, ...FLOWERS, "jar", "pebbles_1"],
-    front: ["lantern", "bush", "candi_pillar", "tree_teak"],
-    near: ["tree_teak", "candi_pillar", "lantern"],
-  },
   mataram: {
     ridge: ["tree_spire", "candi_arch"],
     ridgeN: 6,
@@ -453,18 +419,6 @@ const FLORA: Record<RegionId, Flora> = {
     deco: [...TUFTS, ...PEBBLES, "flower_1"],
     front: ["candi_block", "candi_pillar", "bush", "rock_l"],
     near: ["candi_arch", "candi_pillar", "tree_banyan"],
-  },
-  timur: {
-    ridge: ["tree_spire", "tree_spire", "rock_l"],
-    ridgeN: 8,
-    mid: ["tree_acacia", "tree_dead", "tree_spire", "tree_crystal", "rock_l"],
-    midN: 11,
-    back: ["tree_acacia", "tree_dead", "rock_l", "tree_palm", "tree_spire", "crystal_s"],
-    backN: 10,
-    edge: ["rock_m", "bush", "rock_s", "bones_0"],
-    deco: [...PEBBLES, "bones_0", "bones_1", "tuft_1", "tuft_2"],
-    front: ["rock_l", "tree_dead", "bones_1", "rock_m"],
-    near: ["tree_dead", "tree_spire", "rock_l"],
   },
   kidul: {
     ridge: ["tree_spire"],
@@ -520,7 +474,7 @@ for (const region of REGIONS) {
 /* hand-placed landmarks, fx and life                                  */
 /* ------------------------------------------------------------------ */
 
-const [purwa, sunda, galuh, mataram, timur, kidul, kala] = REGIONS;
+const [purwa, sunda, mataram, kidul, kala] = REGIONS;
 
 // --- Desa Purwa: huts, lamps, the well
 at("far", purwa, prop("shrine", "sunda"), 0.3, 88, 3, { fx: "sil" });
@@ -562,24 +516,6 @@ critter("back", sunda, 0.3, butterfly(0, 92));
 critter("back", sunda, 0.36, butterfly(1, 76));
 critter("front", sunda, 0.66, butterfly(2, 22));
 
-// --- Keraton Galuh: split gates and lantern rows
-at("far", galuh, STORY.gapura, 0.3, 86, 2.5, { fx: "sil" });
-at("far", galuh, STORY.gapura, 0.72, 86, 2, { fx: "sil" });
-at("far", galuh, STORY.galuhRuin, 0.5, 88, 3, { fx: "sil" });
-at("far", galuh, prop("candi_pillar", "galuh"), 0.1, 88, 3.5, { fx: "sil" });
-at("far", galuh, prop("candi_pillar", "galuh"), 0.9, 88, 3.5, { fx: "sil" });
-at("far", galuh, prop("shrine", "galuh"), 0.6, 88, 2.5, { fx: "sil" });
-at("back", galuh, STORY.gapura, 0.5, 90, 2);
-at("back", galuh, petilasan("galuh"), 0.24, 88, 1.5);
-at("back", galuh, STORY.pillar, 0.4, 92, 1.5);
-at("back", galuh, STORY.pillar, 0.62, 92, 1.5);
-critter("back", galuh, 0.34, torch(86));
-critter("back", galuh, 0.68, torch(86));
-critter("back", galuh, 0.15, animal("animal_duck", 12, 12, 96, 24, 6, 1, 70, "patrol"));
-critter("back", galuh, 0.56, animal("animal_goat", 18, 16, 144, 32, 6, 1, 72, "patrol", { flip: true }));
-critter("back", galuh, 0.82, enemy("keris_hantu", 32, 32, false, 92, { motion: "bob", flip: true }));
-critter("back", galuh, 0.9, butterfly(3, 84));
-
 // --- Mataram: a thousand temples
 const candiSpots: Array<[number, number, number]> = [
   [0.04, 2, 88], [0.14, 2.5, 86], [0.24, 2, 90], [0.33, 2.5, 88], [0.44, 3, 86],
@@ -599,25 +535,6 @@ critter("back", mataram, 0.76, enemy("arca", 32, 32, false, 88));
 critter("back", mataram, 0.4, enemy("prajurit_terkutuk", 40, 36, true, 78));
 critter("back", mataram, 0.86, enemy("prajurit_terkutuk", 40, 36, false, 80, { flip: true }));
 critter("back", mataram, 0.6, animal("animal_goat", 18, 16, 144, 32, 6, 0, 70, "patrol"));
-
-// --- Tanah Timur: the Sea of Sand, will-o'-fire
-at("far", timur, STORY.tengger, 0.3, 86, 2.75, { fx: "sil" });
-at("far", timur, STORY.tengger, 0.76, 88, 2, { fx: "sil" });
-at("far", timur, prop("tree_spire", "timur"), 0.5, 84, 2, { fx: "sil" });
-at("far", timur, prop("tree_spire", "timur"), 0.62, 84, 1.5, { fx: "sil", flip: true });
-at("far", timur, prop("tree_dead", "timur"), 0.12, 88, 2, { fx: "sil" });
-at("far", timur, prop("tree_dead", "timur"), 0.92, 88, 1.75, { fx: "sil", flip: true });
-at("back", timur, STORY.tengger, 0.52, 90, 1.5);
-at("back", timur, petilasan("timur"), 0.26, 88, 1.5);
-scatter("back", timur, [MIST], 3, [80, 92], [4, 5], { fx: "mist" }, false);
-critter("back", timur, 0.18, fire(84));
-critter("back", timur, 0.47, fire(78));
-critter("back", timur, 0.8, fire(86));
-critter("front", timur, 0.6, fire(8));
-critter("back", timur, 0.34, enemy("banaspati", 24, 24, false, 104, { motion: "bob", flip: true }));
-critter("back", timur, 0.66, enemy("banaspati", 24, 24, false, 96, { motion: "bob" }));
-critter("mid", timur, 0.5, enemy("banaspati", 24, 24, false, 124, { motion: "bob", flip: true, scale: 1.5 }));
-critter("back", timur, 0.9, enemy("banaspati", 24, 24, true, 90, { flip: true }));
 
 // --- Segara Kidul: the southern sea
 at("far", kidul, STORY.nyiRoro, 0.5, 98, 2.5, { fx: "sil" });
@@ -672,10 +589,10 @@ for (const id of Object.keys(LAYER_ITEMS) as LayerId[]) {
 }
 
 /** The eclipse hanging over Gua Kala (ridge layer coordinates). */
-export const ECLIPSE = { src: "/assets/pixel/kala_eclipse.png", x: 652, b: 112, size: 80 };
+export const ECLIPSE = { src: "/assets/pixel/kala_eclipse.png", x: 468, b: 112, size: 80 };
 
 /** The southern sea: a band of water in the mid layer (layer coordinates, u). */
-export const SEA = { x: 1540, w: 300, b: 90, h: 44 };
+export const SEA = { x: 878, w: 300, b: 90, h: 44 };
 
 /** Boats and serpents that sit on the sea (mid layer, drawn after it). */
 export const SEA_ITEMS: Item[] = [

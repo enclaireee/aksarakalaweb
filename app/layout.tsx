@@ -10,6 +10,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: "Aksara Kala — The Script of Time | 2D Pixel Action RPG",
   description:
     "A top-down 2D pixel-art action RPG rooted in Sundanese and Javanese folklore. Draw ancient Aksara glyphs in slow motion to cast spells and break the curse of Batara Kala.",

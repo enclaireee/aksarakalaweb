@@ -560,6 +560,7 @@
   color: #fce09b;
   font-size: clamp(0.68rem, 1.2vw, 0.85rem);
   letter-spacing: 0.26em;
+  text-wrap: balance;
   text-transform: uppercase;
   text-shadow: 0 1px 0 #0f0b1e;
 }

@@ -271,7 +271,7 @@ function BossReveal({
   return (
     <div
       className={`${styles.reveal} ${
-        boss.side === "left" ? styles.left : styles.right
+        boss.side === "right" ? styles.right : ""
       } ${roaring ? styles.roaring : ""}`}
       style={style}
     >

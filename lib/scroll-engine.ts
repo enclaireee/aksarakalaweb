@@ -42,11 +42,22 @@ export const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 export const range = (p: number, start: number, end: number) =>
   clamp01((p - start) / (end - start));
 
-function frame() {
+/** Smoothing time constant in ms: higher = floatier scroll, lower = snappier. */
+const SMOOTH_MS = 170;
+let lastT = 0;
+
+function frame(now: number) {
+  // Time-based easing so 60Hz and 120Hz screens feel the same (a fixed
+  // per-frame factor is twice as stiff at 120Hz). dt is capped so a
+  // background-tab pause doesn't land as one big jump.
+  const dt = Math.min(64, lastT ? now - lastT : 16.7);
+  lastT = now;
   const targetY = window.scrollY;
   const diff = targetY - smoothY;
   smoothY =
-    reducedMotion || Math.abs(diff) < 0.5 ? targetY : smoothY + diff * 0.14;
+    reducedMotion || Math.abs(diff) < 0.5
+      ? targetY
+      : smoothY + diff * (1 - Math.exp(-dt / SMOOTH_MS));
   const lag = targetY - smoothY;
   const vh = window.innerHeight;
 
@@ -101,6 +112,7 @@ function frame() {
 function start() {
   if (rafId) return;
   smoothY = window.scrollY;
+  lastT = 0;
   reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   rafId = requestAnimationFrame(frame);
 }
