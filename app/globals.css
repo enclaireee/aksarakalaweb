@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Jersey 10";
+  src: url("/fonts/Jersey10-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Jersey 15";
+  src: url("/fonts/Jersey15-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Tiny5";
+  src: url("/fonts/Tiny5-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Sans Sundanese";
+  src: url("/fonts/NotoSansSundanese.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Noto Sans Javanese";
+  src: url("/fonts/NotoSansJavanese.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --bg-void: #0f0b1e;
+  --bg-indigo: #1b1433;
+  --bg-plum: #3a214a;
+  --twilight-rose: #7c3262;
+  --sunset-amber: #f49d5a;
+  --sunset-gold: #fce09b;
+  --aksara-cyan: #5ef2ff;
+  --aksara-teal: #1ca3b8;
+  --text-primary: #f8f4ec;
+  --text-muted: #b8afc8;
+  --border-pixel: #4d3a6b;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-void);
+  color: var(--text-primary);
+}
+
+body {
+  background-color: var(--bg-void);
+  color: var(--text-primary);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+.font-display {
+  font-family: "Jersey 10", "Jersey 15", sans-serif;
+  letter-spacing: 0.03em;
+}
+
+.font-pixel {
+  font-family: "Tiny5", "Jersey 15", monospace;
+}
+
+.font-sunda {
+  font-family: "Noto Sans Sundanese", sans-serif;
+}
+
+.font-jawa {
+  font-family: "Noto Sans Javanese", sans-serif;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.pixel-frame {
+  border: 2px solid var(--border-pixel);
+  box-shadow:
+    inset 0 1px 0 rgba(252, 224, 155, 0.14),
+    0 12px 32px rgba(15, 11, 30, 0.65);
+}
+
+.pixel-frame-cyan {
+  border: 2px solid rgba(94, 242, 255, 0.45);
+  box-shadow:
+    inset 0 0 18px rgba(94, 242, 255, 0.08),
+    0 0 28px rgba(94, 242, 255, 0.14);
+}
+
+.aksara-glow {
+  text-shadow:
+    0 0 10px rgba(94, 242, 255, 0.75),
+    0 0 26px rgba(28, 163, 184, 0.55);
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes float-rune {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes sprite-idle-6 {
+  from {
+    background-position-x: 0px;
+  }
+  to {
+    background-position-x: -1152px;
+  }
+}
+
+.animate-twinkle {
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+
+.animate-float-rune {
+  animation: float-rune 3.6s ease-in-out infinite;
+}
+
+.sprite-class-2x {
+  width: 192px;
+  height: 256px;
+  background-size: 1152px 256px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  animation: sprite-idle-6 0.9s steps(6) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-twinkle,
+  .animate-float-rune,
+  .sprite-class-2x {
+    animation: none;
+  }
+}
