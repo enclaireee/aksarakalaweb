@@ -17,9 +17,6 @@ interface GameCopy {
   perfect: string;
   perfectSub: string;
   /** In-game key prompts. */
-  move: string;
-  attack: string;
-  dodgeKey: string;
   perfectPop: string;
 }
 
@@ -38,9 +35,6 @@ export const gameCopy = {
     dodge: "Read the wind-up. Dodge.",
     perfect: "Perfect dodges pay you back.",
     perfectSub: "Time slows · your counter hits harder",
-    move: "Move",
-    attack: "Attack",
-    dodgeKey: "Dodge",
     perfectPop: "Perfect!",
   },
   id: {
@@ -57,9 +51,6 @@ export const gameCopy = {
     dodge: "Baca ancang-ancangnya. Menghindar.",
     perfect: "Elakan sempurna berbuah balasan.",
     perfectSub: "Waktu melambat · serangan balikmu lebih keras",
-    move: "Gerak",
-    attack: "Serang",
-    dodgeKey: "Menghindar",
     perfectPop: "Sempurna!",
   },
 } satisfies Record<Lang, GameCopy>;

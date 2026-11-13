@@ -26,7 +26,34 @@ const VARS: Record<string, Range> = {
   blackOut: [0.39, 0.42], // ...and back in on the forest road
   enter: [0.4, 0.5],
   app: [0.46, 0.56], // enemies close in
+  zoom: [0.47, 0.56], // the camera leans in for the fight
 };
+
+/** Light pools in world pixels: x, y, radius, kind. Warm = lamp, cool = spirit. */
+type Light = [number, number, number, "warm" | "cool"];
+// Doorways and lamps along the village road, lit for dusk.
+// The clearing (see public/assets/pixel/leuweung_clearing.png): stone lanterns
+// and the shrine's spirit light.
+const FOREST_LIGHTS: Light[] = [
+  [1124, 190, 20, "warm"], [1176, 190, 20, "warm"], [1000, 286, 22, "warm"],
+  [1240, 286, 22, "warm"], [1150, 188, 30, "cool"], [905, 190, 16, "cool"],
+];
+
+// Screen-space atmosphere, in % of the screen; d = delay, t = duration (s).
+const LEAVES = [
+  { x: 6, y: -4, d: 0, t: 11 }, { x: 22, y: -8, d: 4.2, t: 13 }, { x: 41, y: -2, d: 7.5, t: 10 },
+  { x: 58, y: -6, d: 2.1, t: 12 }, { x: 74, y: -3, d: 9.3, t: 14 }, { x: 88, y: -7, d: 5.6, t: 11 },
+  { x: 33, y: -5, d: 11.1, t: 12 }, { x: 66, y: -9, d: 13.4, t: 13 },
+];
+const FIREFLIES = [
+  { x: 12, y: 30, d: 0, t: 6 }, { x: 24, y: 72, d: 1.4, t: 7 }, { x: 37, y: 22, d: 3.1, t: 5 },
+  { x: 48, y: 64, d: 2.2, t: 8 }, { x: 61, y: 28, d: 4.6, t: 6 }, { x: 70, y: 70, d: 0.8, t: 7 },
+  { x: 82, y: 36, d: 3.7, t: 5 }, { x: 91, y: 62, d: 5.2, t: 6 }, { x: 18, y: 50, d: 6.1, t: 7 },
+  { x: 77, y: 18, d: 2.9, t: 8 }, { x: 54, y: 80, d: 1.1, t: 6 }, { x: 5, y: 76, d: 4.1, t: 7 },
+];
+const MISTS = [
+  { y: 30, d: 0, t: 46 }, { y: 58, d: 17, t: 52 }, { y: 44, d: 31, t: 40 }, { y: 72, d: 8, t: 58 },
+];
 
 /**
  * Steps, entered when --p crosses each cut:
@@ -72,6 +99,21 @@ const FOES: Foe[] = [
 
 const at = (x: number, y: number) => ({ "--x": x, "--y": y }) as CSSProperties;
 
+/** World-anchored light pools; the wrapper scrolls with its area's map. */
+function Lights({ lights, className }: { lights: Light[]; className: string }) {
+  return (
+    <div className={`${s.world} ${s.lights} ${className}`} aria-hidden="true">
+      {lights.map(([x, y, r, kind], i) => (
+        <span
+          key={i}
+          className={`${s.light} ${kind === "cool" ? s.cool : ""}`}
+          style={{ "--lx": x, "--ly": y, "--lr": r, animationDelay: `${-i * 0.37}s` } as CSSProperties}
+        />
+      ))}
+    </div>
+  );
+}
+
 /** One-shot effect centred on (x, y): plays once, then hides itself. */
 function Fx({ x, y, delay = 0, children }: { x: number; y: number; delay?: number; children: ReactNode }) {
   return (
@@ -104,19 +146,6 @@ function Dmg({ x, y, n, kind = "" }: { x: number; y: number; n: number; kind?: s
     <span className={`${s.pos} ${s.dmg} ${kind} font-pixel`} style={at(x, y)} aria-hidden="true">
       {n}
     </span>
-  );
-}
-
-function Keys({ keys, label, on }: { keys: string[]; label: string; on: boolean }) {
-  return (
-    <div className={`${s.prompt} font-pixel`} data-on={on} aria-hidden="true">
-      {keys.map((k) => (
-        <kbd key={k} className={s.key}>
-          {k}
-        </kbd>
-      ))}
-      <span>{label}</span>
-    </div>
   );
 }
 
@@ -158,7 +187,7 @@ export function GameScene() {
   const forest = step >= 2;
   const hx = step < 2 ? 0 : step === 8 ? -64 : -30;
   const pose = HERO_POSE[step];
-  const shake = step === 6 || step === 9;
+  const shake = step === 6 || step === 9; // the finisher and the counter land hard
   const cap = caption(step);
 
   const hero = (p: Pose, key: string | number) => (
@@ -167,7 +196,13 @@ export function GameScene() {
 
   return (
     <Scene id="game" length={500} vars={VARS} onProgress={onProgress}>
-      <div ref={stageRef} className={`${s.stage} ${step === 8 ? s.slow : ""}`} data-moving="false">
+      <div
+        ref={stageRef}
+        className={`${s.stage} ${step === 8 ? s.slow : ""}`}
+        data-moving="false"
+        data-area={forest ? "forest" : "town"}
+      >
+        <div className={s.cam}>
         <div key={shake ? step : "still"} className={`${s.screen} ${shake ? s.shaking : ""}`}>
           {/* ---------- the world: real areas, rendered from the game ---------- */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -178,14 +213,18 @@ export function GameScene() {
             hidden={forest}
             draggable={false}
           />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            className={`${s.world} ${s.forest} pixelated`}
-            src="/assets/pixel/world_leuweung.png"
-            alt=""
-            hidden={!forest}
-            draggable={false}
-          />
+          <div className={`${s.world} ${s.forest}`} hidden={!forest} aria-hidden="true">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className={`${s.fill} pixelated`} src="/assets/pixel/world_leuweung.png" alt="" draggable={false} />
+            {/* the fight's clearing: tree walls, a shrine and its lanterns, drawn over the road */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className={`${s.clearing} pixelated`}
+              src="/assets/pixel/leuweung_clearing.png"
+              alt=""
+              draggable={false}
+            />
+          </div>
 
           {/* ---------- enemies ---------- */}
           {forest &&
@@ -245,6 +284,15 @@ export function GameScene() {
             )}
           </div>
 
+          {/* ---------- light: dusk in the village, moonlight in the forest ---------- */}
+          <div className={s.night} aria-hidden="true" />
+          {forest && (
+            <>
+              <Lights lights={FOREST_LIGHTS} className={s.forest} />
+              <span className={`${s.pos} ${s.heroLight}`} style={at(hx, -10)} aria-hidden="true" />
+            </>
+          )}
+
           {/* ---------- the combo ---------- */}
           {(step === 4 || step === 5 || step === 6) && (
             <>
@@ -301,24 +349,54 @@ export function GameScene() {
             </>
           )}
 
-          {/* in-game key prompts, over the hero's head */}
-          <div className={s.pos} style={at(hx, -30)}>
-            <Keys keys={["W", "A", "S", "D"]} label={t.move} on={step <= 1} />
-            <Keys keys={["LMB"]} label={t.attack} on={step >= 3 && step <= 6} />
-            <Keys keys={["Space"]} label={t.dodgeKey} on={step === 7} />
-          </div>
         </div>
+        </div>
+
+        {/* ---------- atmosphere ---------- */}
+        <div className={s.air} aria-hidden="true">
+          {MISTS.map((m, i) => (
+            <span
+              key={i}
+              className={`${s.mist} pixelated`}
+              style={{ top: `${m.y}%`, animationDelay: `${-m.d}s`, animationDuration: `${m.t}s` }}
+            />
+          ))}
+          {LEAVES.map((l, i) => (
+            <span
+              key={i}
+              className={`${s.leaf} pixelated`}
+              style={{ left: `${l.x}%`, top: `${l.y}%`, animationDelay: `${-l.d}s`, animationDuration: `${l.t}s` }}
+            />
+          ))}
+          {FIREFLIES.map((f, i) => (
+            <span
+              key={i}
+              className={s.firefly}
+              style={{ left: `${f.x}%`, top: `${f.y}%`, animationDelay: `${-f.d}s`, animationDuration: `${f.t}s` }}
+            />
+          ))}
+        </div>
+        {/* the forest's own canopy, close to the camera: it slides faster than the ground */}
+        {forest && (
+          <>
+            <div className={`${s.canopy} ${s.canopyTop} pixelated`} aria-hidden="true" />
+            <div className={`${s.canopy} ${s.canopyBottom} pixelated`} aria-hidden="true" />
+          </>
+        )}
+        <div className={s.shade} aria-hidden="true" />
 
         {/* perfect dodge: time slows, the world drains */}
         <div className={s.vignette} aria-hidden="true" />
         {/* area change */}
         <div className={s.black} aria-hidden="true" />
 
-        {/* ---------- the game's own HUD ---------- */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className={`${s.hud} pixelated`} src="/assets/pixel/hud_bars.png" alt="" draggable={false} />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className={`${s.flasks} pixelated`} src="/assets/pixel/hud_flasks.png" alt="" draggable={false} />
+        {/* ---------- the game's own HUD, once there is a fight ---------- */}
+        <div className={s.hudBox} data-on={step >= 3} aria-hidden="true">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className={`${s.hud} pixelated`} src="/assets/pixel/hud_bars.png" alt="" draggable={false} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className={`${s.flasks} pixelated`} src="/assets/pixel/hud_flasks.png" alt="" draggable={false} />
+        </div>
 
         <div className={s.banner} data-on={step === 0 || step === 2} aria-hidden="true">
           <p className={`${s.bannerRegion} font-display`}>{t.region}</p>

@@ -124,6 +124,8 @@ BOSSES.forEach((_, i) => {
 });
 const MORE_START = sliceStart(BOSSES.length);
 VARS.more = [MORE_START + 0.01, MORE_START + 0.05];
+// The dark breaks into dawn and ends on solid cream, the Download scene's first frame.
+VARS.dawn = [0.9, 1];
 
 /* ------------------------------------------------------------------ */
 /* The horde                                                           */
@@ -344,7 +346,13 @@ export function BossesScene() {
   };
 
   return (
-    <Scene id="bosses" length={600} vars={VARS} onProgress={onProgress}>
+    <Scene
+      id="bosses"
+      length={600}
+      vars={VARS}
+      fadeOut={0}
+      onProgress={onProgress}
+    >
       <div className={styles.stage}>
         {act <= 1 ? <Horde line={t.horde} /> : null}
 
@@ -378,6 +386,7 @@ export function BossesScene() {
           {t.more}
         </h2>
         <div className={styles.vignette} />
+        <div className={styles.dawn} aria-hidden="true" />
       </div>
     </Scene>
   );

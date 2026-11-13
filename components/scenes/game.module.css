@@ -16,19 +16,48 @@
   --tm: 5;
 }
 
+/* The camera leans in on the fight as --zoom runs 0 -> 1, centred on the hero. */
+.cam {
+  position: absolute;
+  inset: 0;
+  transform-origin: calc(50% - 16 * var(--u)) calc(50% - 10 * var(--u));
+  scale: calc(1 + var(--zoom, 0) * 0.22);
+}
+
 /* The screen's origin is the viewport centre; children sit at (--x, --y). */
 .screen {
   position: absolute;
   inset: 0;
-  transition: filter 0.3s ease;
+  isolation: isolate;
+  transform-origin: inherit;
+  transition:
+    filter 0.3s ease,
+    scale 0.35s ease-out;
+}
+
+/* perfect dodge: the camera holds in close while time is slow */
+.slow .screen {
+  scale: 1.08;
 }
 
 .slow .screen {
   filter: saturate(0.35) brightness(0.85) hue-rotate(-10deg);
 }
 
+/* a hit that lands: the camera punches in, then shakes */
 .shaking {
-  animation: shake 0.32s steps(6) 0.12s;
+  animation:
+    punch 0.5s cubic-bezier(0.2, 0.8, 0.3, 1),
+    shake 0.32s steps(6) 0.12s;
+}
+
+@keyframes punch {
+  from {
+    scale: 1.07;
+  }
+  to {
+    scale: 1;
+  }
 }
 
 @keyframes shake {
@@ -71,6 +100,128 @@
   width: calc(1920 * var(--u));
   transform: translate3d(calc(-1 * (820 + var(--enter, 0) * 260) * var(--u)), 0, 0);
 }
+
+.fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* drawn for this page: covers world x 560..1400 of the forest render */
+.clearing {
+  position: absolute;
+  top: 0;
+  left: calc(560 * var(--u));
+  width: calc(840 * var(--u));
+  height: 100%;
+  max-width: none;
+}
+
+/* --- light ------------------------------------------------------------- */
+/* Multiplied over the whole screen: the hour of the day. */
+.night {
+  position: absolute;
+  inset: 0;
+  /* over every actor (foes reach z 55), under the effects and numbers */
+  z-index: 60;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  /* village: late afternoon, a light warm grade that keeps the art's own colour */
+  background:
+    radial-gradient(ellipse 70% 90% at 0% 10%, #fffaf0 0%, rgba(255, 250, 240, 0) 70%),
+    linear-gradient(100deg, #fff0d8 0%, #f8e6d2 55%, #e6dcee 100%);
+}
+
+/* forest: Cast's night, moonlight falling in from the top left */
+[data-area="forest"] .night {
+  background:
+    radial-gradient(ellipse 60% 70% at 18% 0%, #d6e4ff 0%, rgba(214, 228, 255, 0) 75%),
+    linear-gradient(170deg, #93a8dc 0%, #6c82c0 45%, #45589a 100%);
+}
+
+/* Cloud shadows drifting over the village. */
+[data-area="town"] .night::after {
+  content: "";
+  position: absolute;
+  inset: 0 -60%;
+  background:
+    radial-gradient(ellipse 18% 30% at 20% 30%, rgba(70, 80, 120, 0.22), transparent 70%),
+    radial-gradient(ellipse 22% 26% at 62% 70%, rgba(70, 80, 120, 0.2), transparent 70%),
+    radial-gradient(ellipse 16% 34% at 92% 24%, rgba(70, 80, 120, 0.18), transparent 70%);
+  animation: clouds 38s linear infinite;
+}
+
+@keyframes clouds {
+  from {
+    transform: translate3d(-18%, 0, 0);
+  }
+  to {
+    transform: translate3d(18%, 0, 0);
+  }
+}
+
+/* Light pools, added back on top of the dark. */
+.lights {
+  z-index: 61;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.light {
+  position: absolute;
+  left: calc(var(--lx) * var(--u));
+  top: calc(var(--ly) * var(--u));
+  width: calc(var(--lr) * 2 * var(--u));
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 210, 130, 0.9) 0%,
+    rgba(242, 160, 60, 0.45) 20%,
+    rgba(214, 110, 50, 0.14) 45%,
+    rgba(214, 110, 50, 0) 65%
+  );
+  animation: flicker 2.6s steps(3) infinite alternate;
+}
+
+.cool {
+  background: radial-gradient(
+    circle,
+    rgba(170, 250, 255, 0.85) 0%,
+    rgba(94, 242, 255, 0.4) 22%,
+    rgba(28, 163, 184, 0.12) 48%,
+    rgba(28, 163, 184, 0) 66%
+  );
+  animation-duration: 4s;
+}
+
+@keyframes flicker {
+  from {
+    opacity: 0.82;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* In the forest the hero carries a little light of their own. */
+.heroLight {
+  z-index: 61;
+  width: calc(90 * var(--u));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: radial-gradient(
+    circle,
+    rgba(200, 240, 255, 0.4) 0%,
+    rgba(94, 242, 255, 0.14) 36%,
+    rgba(94, 242, 255, 0) 66%
+  );
+  transition: left 0.22s ease-out;
+}
+
 
 /* --- actors ----------------------------------------------------------- */
 .pos {
@@ -168,7 +319,7 @@
 
 /* --- effects ---------------------------------------------------------- */
 .fx {
-  z-index: 60;
+  z-index: 62;
   opacity: 0;
   pointer-events: none;
   animation: fxLife calc(0.45s * var(--tm)) linear forwards;
@@ -252,45 +403,159 @@
   }
 }
 
-/* --- key prompts ------------------------------------------------------ */
-.prompt {
+/* --- atmosphere (screen space) --------------------------------------- */
+.air {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mist {
   position: absolute;
   left: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #f8f4ec;
-  text-shadow: 0 2px 0 #0f0b1e;
+  width: calc(192 * var(--u));
+  height: calc(96 * var(--u));
+  background: url("/game/art/world_fx/fx_mist.png") center / 100% 100% no-repeat;
+  mix-blend-mode: screen;
   opacity: 0;
-  transform: translate(-50%, 6px);
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
+  animation: mist 46s linear infinite;
 }
 
-.prompt[data-on="true"] {
-  opacity: 1;
-  transform: translate(-50%, 0);
+/* village daylight: only a faint haze */
+[data-area="town"] .mist {
+  --mistA: 0.08;
 }
 
-.prompt span {
-  margin-left: 6px;
+@keyframes mist {
+  0% {
+    opacity: 0;
+    transform: translate3d(-40vw, 0, 0);
+  }
+  20%,
+  80% {
+    opacity: var(--mistA, 0.22);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(110vw, 0, 0);
+  }
 }
 
-.key {
-  min-width: 2em;
-  padding: 3px 6px 2px;
-  text-align: center;
-  font: inherit;
-  color: #f8f4ec;
-  background: #2a1d44;
-  border: 2px solid #4d3a6b;
-  box-shadow: 0 3px 0 #0f0b1e;
+.leaf {
+  position: absolute;
+  width: calc(3 * var(--u));
+  height: calc(2 * var(--u));
+  background: url("/game/art/world_fx/fx_leaf.png") 0 0 / 100% 100%;
+  animation: leaf 12s linear infinite;
+}
+
+@keyframes leaf {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  25% {
+    transform: translate3d(6vw, 28svh, 0) rotate(90deg);
+  }
+  50% {
+    transform: translate3d(1vw, 56svh, 0) rotate(180deg);
+  }
+  75% {
+    transform: translate3d(8vw, 84svh, 0) rotate(270deg);
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(4vw, 112svh, 0) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.firefly {
+  position: absolute;
+  width: var(--u);
+  height: var(--u);
+  background: #fce09b;
+  box-shadow:
+    0 0 calc(3 * var(--u)) calc(var(--u) / 2) rgba(252, 224, 155, 0.65);
+  opacity: 0;
+  animation: firefly 6s ease-in-out infinite;
+}
+
+/* at dusk only every third one is out yet */
+[data-area="town"] .firefly:not(:nth-child(3n)) {
+  display: none;
+}
+
+[data-area="forest"] .firefly:nth-child(odd) {
+  background: #c8fbff;
+  box-shadow: 0 0 calc(3 * var(--u)) calc(var(--u) / 2) rgba(94, 242, 255, 0.7);
+}
+
+@keyframes firefly {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate3d(calc(9 * var(--u)), calc(-7 * var(--u)), 0);
+  }
+  55% {
+    opacity: 0.25;
+    transform: translate3d(calc(3 * var(--u)), calc(-13 * var(--u)), 0);
+  }
+  75% {
+    opacity: 0.9;
+    transform: translate3d(calc(-6 * var(--u)), calc(-5 * var(--u)), 0);
+  }
+}
+
+/* Foreground leaves at the top and bottom edges, nearer than the ground:
+   they slide 1.6x as far as the map while the camera pans in. */
+.canopy {
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  width: calc(960 * 1.5 * var(--u));
+  height: calc(72 * 1.5 * var(--u));
+  pointer-events: none;
+  background: url("/assets/pixel/canopy.png") 0 0 / 100% 100% no-repeat;
+  transform: translate3d(calc((-120 - var(--enter, 0) * 416) * var(--u)), 0, 0);
+}
+
+.canopyTop {
+  top: calc(-14 * var(--u));
+}
+
+/* the same leaves, turned over for the bottom edge */
+.canopyBottom {
+  bottom: calc(-26 * var(--u));
+  transform: translate3d(calc((-520 - var(--enter, 0) * 416) * var(--u)), 0, 0) scale(-1, -1);
+}
+
+/* A closing vignette, the way Cast frames its night. */
+.shade {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(9, 6, 18, 0.55) 0%, rgba(9, 6, 18, 0) 18%),
+    radial-gradient(ellipse 75% 70% at 50% 48%, rgba(6, 6, 15, 0) 55%, rgba(6, 6, 15, 0.5) 85%, rgba(6, 6, 15, 0.82) 100%);
+}
+
+[data-area="town"] .shade {
+  background:
+    linear-gradient(180deg, rgba(9, 6, 18, 0.5) 0%, rgba(9, 6, 18, 0) 18%),
+    radial-gradient(ellipse 80% 75% at 50% 48%, rgba(58, 33, 74, 0) 58%, rgba(58, 33, 74, 0.4) 86%, rgba(27, 20, 51, 0.7) 100%);
 }
 
 /* --- overlays --------------------------------------------------------- */
@@ -324,22 +589,43 @@
 }
 
 /* --- HUD: the game's own bars, at whole-pixel scale ------------------- */
-.hud,
-.flasks {
+/* One framed cluster in the corner, shown once the fight starts. */
+.hudBox {
   position: absolute;
   z-index: 8;
+  top: 84px;
   left: 24px;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  padding: 10px 12px;
+  background: rgba(15, 11, 30, 0.72);
+  border: 2px solid #4d3a6b;
+  box-shadow:
+    inset 0 1px 0 rgba(252, 224, 155, 0.14),
+    0 0 0 2px #0f0b1e,
+    0 10px 28px rgba(9, 6, 18, 0.6);
   user-select: none;
+  opacity: 0;
+  transform: translate3d(-12px, 0, 0);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+}
+
+.hudBox[data-on="true"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
 }
 
 .hud {
-  top: 84px;
+  display: block;
   width: 264px;
   height: 44px;
 }
 
 .flasks {
-  bottom: 24px;
+  display: block;
   width: 98px;
   height: 40px;
 }
@@ -454,15 +740,13 @@
 
 /* --- phones ----------------------------------------------------------- */
 @media (max-width: 767px) {
-  .hud {
+  .hudBox {
     top: 80px;
     left: 16px;
+    padding: 8px;
   }
   .flasks {
     display: none;
-  }
-  .prompt {
-    font-size: 10px;
   }
   .sub {
     letter-spacing: 0.1em;
@@ -471,7 +755,18 @@
 
 @media (prefers-reduced-motion: reduce) {
   .shaking,
-  .alert {
+  .alert,
+  .light,
+  .night::after {
     animation: none;
+  }
+  .air {
+    display: none;
+  }
+  .cam {
+    scale: none;
+  }
+  .slow .screen {
+    scale: none;
   }
 }

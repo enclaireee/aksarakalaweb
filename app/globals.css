@@ -176,6 +176,15 @@ body {
   opacity: var(--fade);
 }
 
+/* Bosses ends on solid cream and Download opens on it: overlap them by one
+   screen so Download pins the instant Bosses finishes, with no dead scroll between. */
+/* Its own dark fill would otherwise paint over Bosses' last screen. */
+.scene#download {
+  margin-top: -100vh;
+  margin-top: -100svh;
+  background: none;
+}
+
 /* Don't burn frames on scenes that are far off-screen. */
 /* Off-screen scenes skip layout and paint entirely, and drop their raster tiles. */
 .scene[data-on="false"] .scene-pin {

@@ -71,9 +71,12 @@ export function DownloadScene() {
     <Scene
       id="download"
       length={200}
-      fadeIn={0}
+      // ponytail: a near-zero fade-in keeps the pin invisible while it slides in over
+      // the Bosses scene (see #download in globals.css), then shows it the moment it pins.
+      fadeIn={0.001}
       fadeOut={0}
       vars={{
+        wash: [0, 0.25],
         reveal: [0, 0.3],
         settle: [0, 0.85],
         logo: [0.02, 0.2],
@@ -217,6 +220,9 @@ export function DownloadScene() {
             <span aria-hidden="true">·</span> {t.footFonts}
           </p>
         </footer>
+
+        {/* Opens on the cream the Bosses scene ends on, then clears onto the sunrise. */}
+        <div className={s.wash} aria-hidden="true" />
       </div>
     </Scene>
   );

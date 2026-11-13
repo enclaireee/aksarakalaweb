@@ -148,7 +148,8 @@
 /* Closing beat: same treatment as the horde line, driven by --more. */
 .more {
   top: 42svh;
-  opacity: var(--more, 0);
+  /* gone before the light reaches it: white text on cream reads as nothing */
+  opacity: calc(var(--more, 0) - var(--dawn, 0) * 2.5);
   transform: translate3d(-50%, calc((1 - var(--more, 0)) * 18px), 0);
 }
 
@@ -535,6 +536,42 @@
     transparent 55%,
     rgba(9, 6, 18, 0.8) 100%
   );
+}
+
+/* Closing: a sun rises from below the bottom edge and floods the screen
+   cream (#fff7e6, the Download scene's opening colour), so the hand-off is invisible. */
+.dawn {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* the sun: a glow anchored below the bottom edge that swells upward */
+.dawn::before,
+.dawn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.dawn::before {
+  background: radial-gradient(
+    circle at 50% 100%,
+    #fff7e6 0%,
+    #fce09b 16%,
+    rgba(255, 179, 71, 0.6) 32%,
+    rgba(154, 107, 255, 0.2) 50%,
+    transparent 66%
+  );
+  transform-origin: 50% 100%;
+  transform: scale(calc(0.5 + var(--dawn, 0) * 2.5));
+  opacity: calc(var(--dawn, 0) * 3);
+}
+
+/* the flat cream only takes over in the last stretch, so p = 1 is exactly #fff7e6 */
+.dawn::after {
+  background: #fff7e6;
+  opacity: calc((var(--dawn, 0) - 0.55) * 2.3);
 }
 
 /* =====================================================================

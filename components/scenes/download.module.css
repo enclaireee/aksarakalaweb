@@ -132,6 +132,15 @@
   opacity: calc(1 - var(--reveal, 1));
 }
 
+/* solid cream at p = 0, matching the Bosses scene's last frame */
+.wash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: #fff7e6;
+  opacity: calc(1 - var(--wash, 1));
+}
+
 /* ------------------------------------------------------------------ content */
 
 .content {
