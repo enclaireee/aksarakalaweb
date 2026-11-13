@@ -1,238 +1,477 @@
-/* GameScene: what the game is, at a glance. */
+/* GameScene: the game, played by scrolling. Reads --walk, --black,
+   --blackOut, --enter and --app from the Scene. */
 
-.root {
+.stage {
+  /* One source pixel in CSS px: a 400x400 window of the game covers the viewport. */
+  --u: max(calc(100vw / 400), calc(100svh / 400));
+  --tm: 1;
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: var(--bg-void);
-  color: var(--text-primary);
+  background: #090612;
+  color: #f8f4ec;
 }
 
-.glow {
+.slow {
+  --tm: 5;
+}
+
+/* The screen's origin is the viewport centre; children sit at (--x, --y). */
+.screen {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 70% 50% at 50% 100%, rgba(124, 50, 98, 0.45), transparent 70%),
-    radial-gradient(ellipse 50% 40% at 50% 0%, rgba(28, 163, 184, 0.14), transparent 70%);
+  transition: filter 0.3s ease;
 }
 
-.inner {
-  position: relative;
-  height: 100%;
-  /* 56px each side keeps the cards clear of the scene rail */
-  width: min(100% - 112px, 72rem);
-  margin: 0 auto;
-  padding: 88px 0 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: clamp(20px, 4svh, 40px);
+.slow .screen {
+  filter: saturate(0.35) brightness(0.85) hue-rotate(-10deg);
 }
 
-/* --- headline ------------------------------------------------------- */
-.head {
-  text-align: center;
-  opacity: var(--head, 0);
-  transform: translate3d(0, calc((1 - var(--head, 0)) * 16px), 0);
+.shaking {
+  animation: shake 0.32s steps(6) 0.12s;
 }
 
-.kicker {
-  margin: 0 0 10px;
-  font-size: clamp(11px, 1vw, 13px);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--aksara-cyan);
-}
-
-.headline {
-  margin: 0;
-  font-size: clamp(2.1rem, 5.5vw, 4.25rem);
-  line-height: 0.95;
-  text-shadow: 0 4px 0 #0f0b1e;
-}
-
-.premise {
-  margin: 14px auto 0;
-  max-width: 44rem;
-  font-size: clamp(0.95rem, 1.3vw, 1.1rem);
-  line-height: 1.5;
-  color: var(--text-muted);
-}
-
-/* --- feature cards -------------------------------------------------- */
-.grid {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.card {
-  --u: 3px;
-  display: flex;
-  flex-direction: column;
-  padding: 16px 16px 18px;
-  background: rgba(27, 20, 51, 0.85);
-  border: 2px solid var(--border-pixel);
-  box-shadow: 0 0 0 2px #0f0b1e, 4px 4px 0 2px #0f0b1e;
-  opacity: var(--f);
-  transform: translate3d(0, calc((1 - var(--f)) * 28px), 0);
-}
-
-.art {
-  height: calc(var(--u) * 36);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  margin-bottom: 14px;
-  border-bottom: 2px dashed rgba(77, 58, 107, 0.7);
-  padding-bottom: 8px;
-}
-
-.title {
-  margin: 0 0 6px;
-  font-size: clamp(1.4rem, 1.9vw, 1.75rem);
-  line-height: 1;
-  color: var(--sunset-gold);
-}
-
-.body {
-  margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.45;
-  color: var(--text-muted);
-}
-
-/* Card art */
-.glyph {
-  align-self: center;
-  width: calc(var(--u) * 24);
-  height: calc(var(--u) * 23);
-  filter: drop-shadow(0 0 6px rgba(94, 242, 255, 0.8)) drop-shadow(0 0 18px rgba(28, 163, 184, 0.6));
-  animation: glyphPulse 2.4s ease-in-out infinite alternate;
-}
-
-.glyph img {
-  width: 100%;
-  height: 100%;
-}
-
-@keyframes glyphPulse {
-  to {
-    filter: drop-shadow(0 0 3px rgba(94, 242, 255, 0.5)) drop-shadow(0 0 10px rgba(28, 163, 184, 0.35));
+@keyframes shake {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  20% {
+    transform: translate3d(calc(-2 * var(--u)), var(--u), 0);
+  }
+  40% {
+    transform: translate3d(calc(2 * var(--u)), calc(-1 * var(--u)), 0);
+  }
+  60% {
+    transform: translate3d(calc(-1 * var(--u)), 0, 0);
+  }
+  80% {
+    transform: translate3d(var(--u), var(--u), 0);
   }
 }
 
-.duel,
-.party {
+/* --- the world -------------------------------------------------------- */
+.world {
+  position: absolute;
+  top: calc(50% - 246 * var(--u));
+  left: 50%;
+  height: calc(480 * var(--u));
+  max-width: none;
+  user-select: none;
+  will-change: transform;
+}
+
+/* camX (the world x under the hero) runs 240 -> 2160 through the village. */
+.town {
+  width: calc(2400 * var(--u));
+  transform: translate3d(calc(-1 * (240 + var(--walk, 0) * 1920) * var(--u)), 0, 0);
+}
+
+.forest {
+  width: calc(1920 * var(--u));
+  transform: translate3d(calc(-1 * (820 + var(--enter, 0) * 260) * var(--u)), 0, 0);
+}
+
+/* --- actors ----------------------------------------------------------- */
+.pos {
+  position: absolute;
+  left: calc(50% + var(--x) * var(--u));
+  top: calc(50% + var(--y) * var(--u));
+  transform: translate(-50%, -50%);
+}
+
+/* Actors are anchored at their feet. */
+.actor {
+  transform: translate(-50%, -100%);
+  transition:
+    left 0.22s ease-out,
+    top 0.22s ease-out;
+}
+
+.hero {
+  z-index: 40;
+}
+
+.foe {
+  /* Closing in from the right of the screen while --app runs 0 -> 1. */
+  transform: translate(calc(-50% + (1 - var(--app, 0)) * (260 + var(--lag)) * var(--u)), -100%);
+  transition:
+    left 0.6s ease-in-out,
+    top 0.6s ease-in-out;
+}
+
+.shadow {
+  position: absolute;
+  left: 50%;
+  bottom: calc(-1 * var(--u));
+  width: calc(18 * var(--u));
+  height: calc(6 * var(--u));
+  margin-left: calc(-9 * var(--u));
+  border-radius: 50%;
+  background: rgba(9, 6, 18, 0.45);
+}
+
+/* Scroll moves the hero: walk cycle while scrolling, idle when the page rests. */
+.idlePose {
+  display: none;
+}
+.stage[data-moving="false"] .walkPose {
+  display: none;
+}
+.stage[data-moving="false"] .idlePose {
+  display: block;
+}
+
+.knock {
+  animation: knock calc(0.3s * var(--tm)) ease-out both;
+}
+
+@keyframes knock {
+  0% {
+    transform: translate3d(0, 0, 0);
+    filter: brightness(3);
+  }
+  30% {
+    transform: translate3d(calc(4 * var(--u)), 0, 0);
+    filter: brightness(1);
+  }
+  100% {
+    transform: translate3d(calc(2 * var(--u)), 0, 0);
+  }
+}
+
+.dying {
+  animation:
+    knock calc(0.3s * var(--tm)) ease-out both,
+    die 0.25s steps(4) 0.35s both;
+}
+
+@keyframes die {
+  to {
+    opacity: 0;
+  }
+}
+
+.alert {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 2 * var(--u));
+  margin-left: calc(-5 * var(--u));
+  animation: alertBob 0.4s steps(2) infinite alternate;
+}
+
+@keyframes alertBob {
+  to {
+    translate: 0 calc(-2 * var(--u));
+  }
+}
+
+/* --- effects ---------------------------------------------------------- */
+.fx {
+  z-index: 60;
+  opacity: 0;
+  pointer-events: none;
+  animation: fxLife calc(0.45s * var(--tm)) linear forwards;
+}
+
+@keyframes fxLife {
+  0%,
+  99% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.dmg {
+  z-index: 70;
+  font-size: calc(9 * var(--u));
+  line-height: 1;
+  color: #f8f4ec;
+  text-shadow:
+    0 var(--u) 0 #0f0b1e,
+    var(--u) 0 0 #0f0b1e,
+    calc(-1 * var(--u)) 0 0 #0f0b1e,
+    0 calc(-1 * var(--u)) 0 #0f0b1e;
+  animation: dmgPop 0.9s ease-out 0.08s both;
+}
+
+.big {
+  font-size: calc(13 * var(--u));
+  color: #f2b84b;
+}
+
+.crit {
+  font-size: calc(13 * var(--u));
+  color: #5ef2ff;
+}
+
+@keyframes dmgPop {
+  0% {
+    opacity: 0;
+    translate: 0 0;
+    scale: 0.6;
+  }
+  15% {
+    opacity: 1;
+    scale: 1.2;
+  }
+  30% {
+    scale: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: 0 calc(-12 * var(--u));
+  }
+}
+
+.perfect {
+  z-index: 70;
+  white-space: nowrap;
+  font-size: calc(14 * var(--u));
+  line-height: 1;
+  color: #5ef2ff;
+  text-shadow:
+    0 calc(1.5 * var(--u)) 0 #0f0b1e,
+    0 0 calc(6 * var(--u)) rgba(94, 242, 255, 0.7);
+  animation: perfectPop 0.35s steps(4) 0.15s both;
+}
+
+@keyframes perfectPop {
+  from {
+    opacity: 0;
+    scale: 1.6;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* --- key prompts ------------------------------------------------------ */
+.prompt {
+  position: absolute;
+  left: 0;
+  bottom: 0;
   display: flex;
-  align-items: flex-end;
-}
-
-.duel > :last-child {
-  margin-left: calc(var(--u) * -10);
-}
-
-.party > * + * {
-  margin-left: calc(var(--u) * -14);
-}
-
-.map {
-  width: calc(var(--u) * 60);
-  height: calc(var(--u) * 22);
-  margin-bottom: auto;
-  margin-top: auto;
-}
-
-/* --- controls ------------------------------------------------------- */
-.keys {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px 28px;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-muted);
-  opacity: var(--keys, 0);
+  color: #f8f4ec;
+  text-shadow: 0 2px 0 #0f0b1e;
+  opacity: 0;
+  transform: translate(-50%, 6px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
-.keys li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.prompt[data-on="true"] {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
-.kbd {
-  display: inline-block;
-  min-width: 2.4em;
-  padding: 4px 8px 3px;
+.prompt span {
+  margin-left: 6px;
+}
+
+.key {
+  min-width: 2em;
+  padding: 3px 6px 2px;
   text-align: center;
   font: inherit;
-  color: var(--text-primary);
-  background: var(--bg-plum);
-  border: 2px solid var(--border-pixel);
+  color: #f8f4ec;
+  background: #2a1d44;
+  border: 2px solid #4d3a6b;
   box-shadow: 0 3px 0 #0f0b1e;
 }
 
-/* --- responsive ----------------------------------------------------- */
-@media (max-width: 1023px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+/* --- overlays --------------------------------------------------------- */
+.vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 48%,
+    rgba(94, 242, 255, 0) 38%,
+    rgba(94, 242, 255, 0.14) 58%,
+    rgba(28, 163, 184, 0.5) 80%,
+    rgba(10, 60, 90, 0.85) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.slow .vignette {
+  opacity: 1;
+}
+
+.black {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background: #090612;
+  opacity: calc(var(--black, 0) * (1 - var(--blackOut, 0)));
+}
+
+/* --- HUD: the game's own bars, at whole-pixel scale ------------------- */
+.hud,
+.flasks {
+  position: absolute;
+  z-index: 8;
+  left: 24px;
+  user-select: none;
+}
+
+.hud {
+  top: 84px;
+  width: 264px;
+  height: 44px;
+}
+
+.flasks {
+  bottom: 24px;
+  width: 98px;
+  height: 40px;
+}
+
+@media (min-width: 1280px) and (min-height: 760px) {
+  .hud {
+    width: 396px;
+    height: 66px;
+  }
+  .flasks {
+    width: 147px;
+    height: 60px;
   }
 }
 
+.banner {
+  position: absolute;
+  z-index: 8;
+  top: 22svh;
+  left: 50%;
+  text-align: center;
+  opacity: 0;
+  transform: translate(-50%, -8px);
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+
+.banner[data-on="true"] {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.banner p {
+  margin: 0;
+  text-shadow: 0 3px 0 #0f0b1e;
+}
+
+.bannerRegion {
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  line-height: 1;
+  color: #fce09b;
+}
+
+.bannerArea {
+  margin-top: 0.4em !important;
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+/* --- copy ------------------------------------------------------------- */
+.scrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 36%;
+  z-index: 9;
+  pointer-events: none;
+  background: linear-gradient(0deg, rgba(9, 6, 18, 0.92) 0%, rgba(9, 6, 18, 0.6) 45%, rgba(9, 6, 18, 0) 100%);
+}
+
+.copy {
+  position: absolute;
+  left: 50%;
+  bottom: max(4.5svh, 22px);
+  width: min(90vw, 860px);
+  z-index: 10;
+  transform: translateX(-50%);
+}
+
+.block {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  text-align: center;
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 0.28s ease,
+    transform 0.28s ease;
+}
+
+.block[data-on="true"] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.line {
+  margin: 0;
+  font-size: clamp(2.1rem, 5.5vw, 4.25rem);
+  font-weight: 400;
+  line-height: 0.95;
+  text-shadow: 0 4px 0 #0f0b1e;
+  text-wrap: balance;
+}
+
+.sub {
+  margin: 0.7em 0 0;
+  font-size: clamp(0.75rem, 1.2vw, 0.95rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 0 #0f0b1e;
+  text-wrap: balance;
+}
+
+.subCyan {
+  color: #5ef2ff;
+}
+
+/* --- phones ----------------------------------------------------------- */
 @media (max-width: 767px) {
-  .inner {
-    width: calc(100% - 32px);
-    padding: 76px 0 24px;
-    gap: 18px;
+  .hud {
+    top: 80px;
+    left: 16px;
   }
-  .premise {
-    font-size: 0.875rem;
-    margin-top: 10px;
-  }
-  .grid {
-    gap: 10px;
-  }
-  .card {
-    --u: 2px;
-    padding: 10px 10px 12px;
-  }
-  .art {
-    margin-bottom: 8px;
-  }
-  .title {
-    font-size: 1.2rem;
-  }
-  .body {
-    font-size: 0.78rem;
-    line-height: 1.35;
-  }
-  /* Phones can't play it; the keyboard strip is noise there. */
-  .keys {
+  .flasks {
     display: none;
   }
-}
-
-/* Short viewports: drop the long text, keep the cards. */
-@media (max-height: 640px) {
-  .premise,
-  .body {
-    display: none;
+  .prompt {
+    font-size: 10px;
   }
-  .card {
-    --u: 2px;
+  .sub {
+    letter-spacing: 0.1em;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .glyph {
+  .shaking,
+  .alert {
     animation: none;
   }
 }

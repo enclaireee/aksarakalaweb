@@ -1,74 +1,65 @@
 import type { Lang } from "@/components/LanguageProvider";
 
-export type FeatureId = "cast" | "combat" | "classes" | "world";
-
 interface GameCopy {
-  kicker: string;
-  headline: string;
-  premise: string;
-  features: Record<FeatureId, { title: string; body: string }>;
-  controls: [key: string, action: string][];
+  /** Area banners, as the game shows them on entering an area. */
+  region: string;
+  town: string;
+  forest: string;
+  /** Captions, one per beat. */
+  genre: string;
+  genreSub: string;
+  explore: string;
+  exploreSub: string;
+  fight: string;
+  fightSub: string;
+  combo: string;
+  dodge: string;
+  perfect: string;
+  perfectSub: string;
+  /** In-game key prompts. */
+  move: string;
+  attack: string;
+  dodgeKey: string;
+  perfectPop: string;
 }
 
 export const gameCopy = {
   en: {
-    kicker: "Top-down pixel-art action RPG",
-    headline: "Draw your spells. Fight the legends.",
-    premise:
-      "Explore a mythic Java and Sunda, battle creatures straight out of folklore, and cast magic by drawing real Javanese and Sundanese letters with your mouse.",
-    features: {
-      cast: {
-        title: "Draw to cast",
-        body: "Hold to slow time, trace an aksara, release. Bolt, burst, ward, heal and more.",
-      },
-      combat: {
-        title: "Real-time combat",
-        body: "Three-hit combos, dodge rolls with i-frames, and perfect dodges that pay you back.",
-      },
-      classes: {
-        title: "Eight classes",
-        body: "From the kelewang vanguard to the shadow-puppet dalang. Each one fights its own way.",
-      },
-      world: {
-        title: "Seven regions",
-        body: "49 areas to explore, from rice-field villages to the jaws of Gua Kala.",
-      },
-    },
-    controls: [
-      ["WASD", "Move"],
-      ["LMB", "Attack"],
-      ["RMB", "Draw a spell"],
-      ["Space", "Dodge"],
-    ],
+    region: "Tatar Sunda",
+    town: "Kampung",
+    forest: "Leuweung",
+    genre: "A top-down action RPG.",
+    genreSub: "Scroll to walk",
+    explore: "Explore a mythic Java.",
+    exploreSub: "7 regions · 49 areas · villages, forests, temples, the southern sea",
+    fight: "Fight in real time.",
+    fightSub: "Folklore monsters, hand-drawn in pixels",
+    combo: "Chain three-hit combos.",
+    dodge: "Read the wind-up. Dodge.",
+    perfect: "Perfect dodges pay you back.",
+    perfectSub: "Time slows · your counter hits harder",
+    move: "Move",
+    attack: "Attack",
+    dodgeKey: "Dodge",
+    perfectPop: "Perfect!",
   },
   id: {
-    kicker: "RPG aksi pixel-art top-down",
-    headline: "Goreskan mantramu. Lawan para legenda.",
-    premise:
-      "Jelajahi Jawa dan Sunda yang mitis, lawan makhluk-makhluk dari cerita rakyat, dan rapalkan sihir dengan menggambar aksara Jawa dan Sunda memakai mouse.",
-    features: {
-      cast: {
-        title: "Gambar untuk merapal",
-        body: "Tahan untuk memperlambat waktu, goreskan aksara, lepaskan. Sambaran, ledakan, tameng, penyembuh, dan lainnya.",
-      },
-      combat: {
-        title: "Pertarungan real-time",
-        body: "Kombo tiga pukulan, guling menghindar dengan i-frame, dan elakan sempurna yang berbuah hadiah.",
-      },
-      classes: {
-        title: "Delapan kelas",
-        body: "Dari hulubalang berkelewang sampai dalang pemain bayangan. Tiap kelas bertarung dengan caranya sendiri.",
-      },
-      world: {
-        title: "Tujuh wilayah",
-        body: "49 area untuk dijelajahi, dari desa sawah sampai mulut Gua Kala.",
-      },
-    },
-    controls: [
-      ["WASD", "Gerak"],
-      ["LMB", "Serang"],
-      ["RMB", "Gambar mantra"],
-      ["Space", "Menghindar"],
-    ],
+    region: "Tatar Sunda",
+    town: "Kampung",
+    forest: "Leuweung",
+    genre: "RPG aksi top-down.",
+    genreSub: "Gulir untuk berjalan",
+    explore: "Jelajahi Jawa yang mitis.",
+    exploreSub: "7 wilayah · 49 area · desa, hutan, candi, laut selatan",
+    fight: "Bertarung real-time.",
+    fightSub: "Makhluk cerita rakyat, digambar piksel demi piksel",
+    combo: "Rangkai kombo tiga pukulan.",
+    dodge: "Baca ancang-ancangnya. Menghindar.",
+    perfect: "Elakan sempurna berbuah balasan.",
+    perfectSub: "Waktu melambat · serangan balikmu lebih keras",
+    move: "Gerak",
+    attack: "Serang",
+    dodgeKey: "Menghindar",
+    perfectPop: "Sempurna!",
   },
 } satisfies Record<Lang, GameCopy>;
