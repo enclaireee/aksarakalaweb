@@ -4,7 +4,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  /* the same warm white KalaScene ends on, so the two pins meet without a seam */
+  /* warm white dawn */
   background: #fff7e6;
   /* one native (480x270) pixel, cover-scaled */
   --u: max(100vw / 480, 100svh / 270);
@@ -118,7 +118,7 @@
     linear-gradient(to top, rgba(15, 11, 30, 0.88), rgba(15, 11, 30, 0) 24%);
 }
 
-/* white at the top edge (meets KalaScene's flash), already open to the sunrise below */
+/* white at the top edge , already open to the sunrise below */
 .veil {
   position: absolute;
   inset: 0;

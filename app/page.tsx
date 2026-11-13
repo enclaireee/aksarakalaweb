@@ -1,12 +1,10 @@
 import { SiteChrome } from "@/components/SiteChrome";
 import { GateScene } from "@/components/scenes/GateScene";
-import { KelirScene } from "@/components/scenes/KelirScene";
-import { ForgottenScene } from "@/components/scenes/ForgottenScene";
+import { GameScene } from "@/components/scenes/GameScene";
 import { CastScene } from "@/components/scenes/CastScene";
+import { PathsScene } from "@/components/scenes/PathsScene";
 import { JourneyScene } from "@/components/scenes/JourneyScene";
 import { BossesScene } from "@/components/scenes/BossesScene";
-import { PathsScene } from "@/components/scenes/PathsScene";
-import { KalaScene } from "@/components/scenes/KalaScene";
 import { DownloadScene } from "@/components/scenes/DownloadScene";
 
 export default function Home() {
@@ -14,13 +12,11 @@ export default function Home() {
     <main>
       <SiteChrome />
       <GateScene />
-      <KelirScene />
-      <ForgottenScene />
+      <GameScene />
       <CastScene />
+      <PathsScene />
       <JourneyScene />
       <BossesScene />
-      <PathsScene />
-      <KalaScene />
       <DownloadScene />
     </main>
   );

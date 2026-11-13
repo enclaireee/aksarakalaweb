@@ -3,7 +3,7 @@ import type { Lang } from "@/components/LanguageProvider";
 export const downloadCopy = {
   en: {
     logoAlt: "Aksara Kala",
-    line: "Her name is still yours to write.",
+    line: "Pick up the pen. Java is waiting.",
     windows: "Download for Windows",
     windowsMeta: ".exe · ~220 MB",
     mac: "Download for macOS",
@@ -18,7 +18,7 @@ export const downloadCopy = {
   },
   id: {
     logoAlt: "Aksara Kala",
-    line: "Namanya masih menunggu untuk kautulis.",
+    line: "Ambil penamu. Jawa menanti.",
     windows: "Unduh untuk Windows",
     windowsMeta: ".exe · ~220 MB",
     mac: "Unduh untuk macOS",

@@ -16,48 +16,48 @@ interface JourneyCopy {
 
 export const journeyCopy = {
   en: {
-    opening: "Follow the torn lontar east.",
-    openingSub: "Desa Purwa falls behind you.",
-    more: "…and many more lands between here and the Maw.",
+    opening: "Explore a mythic Java.",
+    openingSub: "Seven regions · 49 areas · one road east",
+    more: "…plus Keraton Galuh, Tanah Timur and more to find.",
     regions: {
       sunda: {
         name: "Tatar Sunda",
-        line: "Bamboo whispers a name it shouldn't know.",
+        line: "Bamboo forests, highland villages, things in the trees.",
       },
       mataram: {
         name: "Mataram",
-        line: "A thousand temples, raised in one night.",
+        line: "Temple ruins and royal roads.",
       },
       kidul: {
         name: "Segara Kidul",
-        line: "The sea does not forget.",
+        line: "Coastal cliffs and a sea that bites back.",
       },
       kala: {
         name: "Gua Kala",
-        line: "Here, time comes to feed.",
+        line: "The final dungeon.",
       },
     },
   },
   id: {
-    opening: "Ikuti sobekan lontar itu ke timur.",
-    openingSub: "Desa Purwa tertinggal di belakangmu.",
-    more: "…dan masih banyak negeri lain sebelum Gua Kala.",
+    opening: "Jelajahi Jawa yang mitis.",
+    openingSub: "Tujuh wilayah · 49 area · satu jalan ke timur",
+    more: "…ditambah Keraton Galuh, Tanah Timur, dan lainnya.",
     regions: {
       sunda: {
         name: "Tatar Sunda",
-        line: "Bambu membisikkan nama yang tak semestinya ia tahu.",
+        line: "Hutan bambu, desa di dataran tinggi, sesuatu di balik pepohonan.",
       },
       mataram: {
         name: "Mataram",
-        line: "Seribu candi, berdiri dalam semalam.",
+        line: "Reruntuhan candi dan jalan para raja.",
       },
       kidul: {
         name: "Segara Kidul",
-        line: "Laut tidak pernah lupa.",
+        line: "Tebing pantai dan laut yang menggigit.",
       },
       kala: {
         name: "Gua Kala",
-        line: "Di sini, waktu datang untuk makan.",
+        line: "Dungeon terakhir.",
       },
     },
   },

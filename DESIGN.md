@@ -1,10 +1,10 @@
 # DESIGN.md — Aksara Kala Website (v2)
 
-Showcase site for Aksara Kala (*The Script of Time*), a Godot pixel-art action RPG built on Sundanese and Javanese folklore. One long page, nine pinned scenes; scrolling is the only interaction besides the header controls. Bilingual EN/ID.
+Showcase site for Aksara Kala (*The Script of Time*), a Godot pixel-art action RPG built on Sundanese and Javanese folklore. One long page, seven pinned scenes. The site sells the game (genre, mechanics, classes, world, bosses), not the plot; keep story to a line at most; scrolling is the only interaction besides the header controls. Bilingual EN/ID.
 
 ## 1. Architecture
 
-- `app/page.tsx` renders `<SiteChrome />` then the scenes in order: gate, kelir, forgotten, cast, journey, bosses, paths, kala, download.
+- `app/page.tsx` renders `<SiteChrome />` then the scenes in order: gate, game, cast, paths, journey, bosses, download.
 - `components/Scene.tsx`: a tall `<section id>` with a sticky viewport-sized stage. Props: `length` (scroll length in viewport heights), `vars` (named sub-ranges of progress), `fadeIn`/`fadeOut`, `onProgress` (discrete state only).
 - `lib/scroll-engine.ts`: a single rAF loop with smoothed scroll. Per scene it writes `--p` (0..1 pinned progress), `--fade` (opacity envelope) and one `--<name>` (0..1) per named range, plus `data-on` on scenes near the viewport. Scenes animate with CSS `calc()` on these vars, not React re-renders. It also tracks the active scene for the rail and exposes `scrollToScene`.
 - `lib/site.ts`: scene ids/labels (EN/ID) and download links. Copy lives in `lib/copy/<scene>.ts`; `LanguageProvider` stores the language in `localStorage` (`aksarakala_lang`).
@@ -43,12 +43,10 @@ Twilight indigo-to-amber, crisp pixel art, glowing cyan Aksara runes. Art is aut
 
 ## 3. Scenes
 
-1. **gate** (200): Title screen. Layered sky, far/near hills, constellation and drifting glyphs, the hero in a storm; title, tagline and Download/Enter buttons. Scroll parallaxes the layers and moves into the story.
-2. **kelir** (280): Night of the ruwatan in Desa Purwa. A wayang kelir (shadow screen) lit by lamps; puppets and gamelan players enter in turn, then the lamp goes out and Kala's shadow takes over. Scroll walks each puppet in.
-3. **forgotten** (260): Dawn after the burned kelir. Dialogue between the hero and Ibu who no longer remembers Laras, her portrait fading, ending on the torn lontar with Laras's "Ka". Scroll advances the beats.
-4. **cast** (340): The core mechanic. Hero fights enemies; time slows, a glyph (Ka, then Ca) is drawn as one glowing stroke scrubbed by scroll, and releases a Bolt or Burst. Ends on "nine glyphs" and a Download button. Discrete steps via `onProgress`.
-5. **journey** (480): Side-scrolling road east through six regions (Sunda, Galuh, Mataram, Timur, Kidul, Kala). Parallax layers, props, critters and a sea section; the hero walks as scroll advances, with a region name per border. Data in `components/scenes/journey/data.ts`.
-6. **bosses** (440): Procession of five bosses (Sandekala, Barma Wijaya, Bandung Bondowoso, Buto Ijo, the Nameless Hunter), each in its own biome with telegraph motifs, a name and one line of dread, plus a boss HUD frame. Scroll moves between bosses.
-7. **paths** (170): The eight classes (warrior, lancer, archer, herder, rogue, dancer, mage, dalang) line up as portraits, middle pair first.
-8. **kala** (300): The eclipse over Desa Purwa; Kala speaks, lightning and glows, then the Ka glyph is drawn by scroll as the pen, with the headline "Break the eclipse. Bring Laras home." Shot boundaries must match `--closeOn` in `kala.module.css`.
-9. **download** (170): Logo, closing line, Windows/macOS download buttons and releases/GitHub links, footer credit.
+1. **gate** (260): Title screen. Layered sky, far/near hills, constellation and drifting glyphs, the hero in a storm; title, one-line genre pitch and Download/See-the-game buttons.
+2. **game** (220): What the game is. Genre kicker, headline, one-line premise, four feature cards (draw to cast, real-time combat, eight classes, seven regions with the pixel Java map `public/assets/pixel/java_map.png`) and a desktop controls strip.
+3. **cast** (480): The core mechanic. Hero fights enemies; time slows, a glyph (Ka, then Ca) is drawn as one glowing stroke scrubbed by scroll, and releases a Bolt or Burst. Ends on a Download button. Discrete steps via `onProgress`.
+4. **paths** (240): The eight classes line up as portraits with their in-game title and role, middle pair first.
+5. **journey** (560): Side-scrolling road east through the regions. Parallax layers, props, critters and a sea section; the hero walks as scroll advances, with a region name and biome line per border. Data in `components/scenes/journey/data.ts`.
+6. **bosses** (600): Procession of bosses (Sandekala, Bandung Bondowoso, Buto Ijo, the Nameless Hunter), each in its own biome with telegraph motifs, a name and one line of dread, plus a boss HUD frame.
+7. **download** (170): Logo, closing line, Windows/macOS download buttons and releases/GitHub links, footer credit.

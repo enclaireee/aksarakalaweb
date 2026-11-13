@@ -202,7 +202,7 @@ export function GateScene() {
               <button
                 type="button"
                 className={`${s.btn} ${s.btnGhost} font-display`}
-                onClick={() => scrollToScene("kelir", 0.1)}
+                onClick={() => scrollToScene("game", 0.6)}
               >
                 {t.enter} <span aria-hidden="true">↓</span>
               </button>

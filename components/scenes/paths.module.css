@@ -196,6 +196,16 @@
   transition: opacity 0.2s ease-out;
 }
 
+.role {
+  display: block;
+  margin-top: 3px;
+  font-size: max(10px, 0.85em);
+  letter-spacing: 0.06em;
+  text-transform: none;
+  text-align: center;
+  color: #b8afc8;
+}
+
 /* Hover one figure: it brightens, the rest step back into shadow. */
 @media (hover: hover) {
   .lineup:has(.slot:hover) .fig {
@@ -222,8 +232,8 @@
     --cols: 4;
     --uh: 30svh;
     --uw: 100vw;
-    bottom: 8svh;
-    row-gap: 14px;
+    bottom: 12svh;
+    row-gap: 44px;
   }
   .caption {
     letter-spacing: 0.04em;
@@ -234,7 +244,7 @@
    captions down a line; neighbours then never share a baseline. */
 @media (max-width: 1023px) {
   .slot:nth-child(even) .caption {
-    top: calc(100% - var(--u) * 3 + 1.3em);
+    top: calc(100% - var(--u) * 3 + 2.6em);
   }
 }
 

@@ -74,6 +74,7 @@ export function PathsScene() {
               />
               <span className={`${styles.caption} font-pixel`}>
                 {t.titles[id]}
+                <span className={styles.role}>{t.roles[id]}</span>
               </span>
             </li>
           ))}
