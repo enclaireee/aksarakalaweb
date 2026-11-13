@@ -1,0 +1,249 @@
+.stage {
+  position: absolute;
+  inset: 0;
+  background: #090612;
+  color: #f8f4ec;
+  overflow: hidden;
+}
+
+/* The lamp-lit kelir (480x270): the eight stand in front of it like puppets. */
+.kelir {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: bottom;
+  opacity: calc(0.25 + var(--lamp, 0) * 0.75);
+  user-select: none;
+}
+
+.flicker {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 50% 45% at 50% 45%,
+    rgba(252, 224, 155, 0.16) 0%,
+    transparent 70%
+  );
+  opacity: var(--lamp, 0);
+  animation: lampFlicker 2.6s steps(6) infinite;
+}
+
+@keyframes lampFlicker {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.05);
+  }
+  55% {
+    transform: scale(0.97);
+  }
+  80% {
+    transform: scale(1.03);
+  }
+}
+
+.floorGlow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46svh;
+  background: radial-gradient(
+    ellipse 62% 70% at 50% 100%,
+    rgba(244, 157, 90, 0.5) 0%,
+    rgba(244, 157, 90, 0.16) 50%,
+    transparent 100%
+  );
+  opacity: var(--lamp, 0);
+}
+
+.shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(9, 6, 18, 0.9) 0%,
+      rgba(9, 6, 18, 0.6) 22%,
+      rgba(9, 6, 18, 0) 42%
+    ),
+    radial-gradient(
+      ellipse 80% 75% at 50% 55%,
+      transparent 55%,
+      rgba(9, 6, 18, 0.75) 100%
+    );
+}
+
+.headline {
+  position: absolute;
+  top: 13svh;
+  left: 50%;
+  width: min(88vw, 62rem);
+  margin: 0;
+  text-align: center;
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
+  line-height: 0.95;
+  text-shadow:
+    0 4px 0 #0f0b1e,
+    0 0 30px rgba(9, 6, 18, 0.9);
+  opacity: var(--head, 0);
+  transform: translate3d(-50%, calc((1 - var(--head, 0)) * 16px), 0);
+}
+
+/* --- the line-up ---------------------------------------------------- */
+.lineup {
+  --slot: 44;
+  --uh: 52svh;
+  --uw: calc(100vw - 120px);
+  --cols: 8;
+  /* One source pixel in CSS px (frames are 96x128). */
+  --u: max(
+    1px,
+    min(
+      calc(var(--uh) / 128),
+      calc(var(--uw) / (var(--cols) * var(--slot) + 52))
+    )
+  );
+  position: absolute;
+  left: 50%;
+  bottom: 10svh;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), calc(var(--u) * var(--slot)));
+  transform: translate3d(-50%, 0, 0);
+}
+
+@supports (width: round(down, 10px, 1px)) {
+  .lineup {
+    --u: max(
+      1px,
+      round(
+        down,
+        min(
+          calc(var(--uh) / 128),
+          calc(var(--uw) / (var(--cols) * var(--slot) + 52))
+        ),
+        0.5px
+      )
+    );
+  }
+}
+
+.slot {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: calc(var(--u) * 128);
+  opacity: var(--f);
+  transform: translate3d(
+    calc((1 - var(--f)) * var(--dx)),
+    calc((1 - var(--f)) * 24%),
+    0
+  );
+}
+
+.fig {
+  flex: none;
+  display: block;
+  width: calc(var(--u) * 96);
+  height: calc(var(--u) * 128);
+  background-repeat: no-repeat;
+  background-size: calc(var(--u) * 576) calc(var(--u) * 128);
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  animation: figIdle 0.9s steps(6) infinite;
+  transition: filter 0.2s ease-out;
+}
+
+@keyframes figIdle {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: calc(var(--u) * -576);
+  }
+}
+
+.footShadow {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--u) * 4);
+  width: calc(var(--u) * 40);
+  height: calc(var(--u) * 8);
+  border-radius: 50%;
+  background: rgba(9, 6, 18, 0.55);
+  transform: translate3d(-50%, 0, 0);
+}
+
+.caption {
+  position: absolute;
+  top: calc(100% - var(--u) * 3);
+  left: 50%;
+  transform: translate3d(-50%, 0, 0);
+  white-space: nowrap;
+  font-size: clamp(9px, 0.9vw, 13px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fce09b;
+  text-shadow: 0 1px 0 #0f0b1e, 0 0 8px rgba(9, 6, 18, 0.9);
+  transition: opacity 0.2s ease-out;
+}
+
+/* Hover one figure: it brightens, the rest step back into shadow. */
+@media (hover: hover) {
+  .lineup:has(.slot:hover) .fig {
+    filter: brightness(0.38);
+  }
+  .lineup:has(.slot:hover) .caption {
+    opacity: 0.35;
+  }
+  .lineup .slot:hover .fig {
+    filter: brightness(1.15);
+  }
+  .lineup .slot:hover .caption {
+    opacity: 1;
+  }
+}
+
+/* Phone: two rows of four. */
+@media (max-width: 767px) {
+  .headline {
+    top: 84px;
+    font-size: clamp(1.9rem, 8.5vw, 2.5rem);
+  }
+  .lineup {
+    --cols: 4;
+    --uh: 30svh;
+    --uw: 100vw;
+    bottom: 8svh;
+    row-gap: 14px;
+  }
+  .caption {
+    letter-spacing: 0.04em;
+  }
+}
+
+/* Short landscape viewports. */
+@media (min-width: 768px) and (max-height: 520px) {
+  .headline {
+    top: 68px;
+    font-size: clamp(1.75rem, 4.5vw, 2.75rem);
+  }
+  .lineup {
+    --uh: 46svh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fig,
+  .flicker {
+    animation: none;
+  }
+}

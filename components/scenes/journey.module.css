@@ -1,0 +1,505 @@
+/*
+ * Journey: a 270u-tall side-scroller anchored to the bottom of the stage.
+ * --u is one game pixel. Everything in the world is sized in multiples of it.
+ */
+.stage {
+  --u: calc(100svh / 270);
+  --hx: 32vw; /* hero column; world x = 0 sits here at --p = 0 */
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #090612;
+}
+
+/* Snap one game pixel to a whole CSS pixel where round() exists, so tiles stay crisp. */
+@supports (width: round(nearest, 1.4px, 1px)) {
+  .stage {
+    --u: max(1px, round(nearest, calc(100svh / 270), 1px));
+  }
+}
+
+@media (max-width: 640px) {
+  .stage {
+    --hx: 24vw;
+  }
+}
+
+/* ---------------------------------------------------------------- sky */
+.sky {
+  position: absolute;
+  inset: 0;
+}
+.skyPurwa {
+  background: linear-gradient(
+    to bottom,
+    #0d0819 0%,
+    #24163a 30%,
+    #5a2c4c 50%,
+    #b7613f 62%,
+    #f4a35e 70%
+  );
+}
+.skySunda {
+  opacity: var(--s1);
+  background: linear-gradient(
+    to bottom,
+    #0a1c29 0%,
+    #14393f 28%,
+    #2f6a5c 48%,
+    #6fa37c 60%,
+    #c4dcab 70%
+  );
+}
+.skyGaluh {
+  opacity: var(--s2);
+  background: linear-gradient(
+    to bottom,
+    #2d0a18 0%,
+    #6e1b22 26%,
+    #b9442a 46%,
+    #ea8f37 59%,
+    #fcd684 70%
+  );
+}
+.skyMataram {
+  opacity: var(--s3);
+  background: linear-gradient(
+    to bottom,
+    #4b3a55 0%,
+    #8d5a5c 26%,
+    #c98363 46%,
+    #ecba8a 59%,
+    #fbe7bd 70%
+  );
+}
+.skyTimur {
+  opacity: var(--s4);
+  background: linear-gradient(
+    to bottom,
+    #4a200f 0%,
+    #8f4416 26%,
+    #c9781f 46%,
+    #eaa844 59%,
+    #f7d993 70%
+  );
+}
+.skyKidul {
+  opacity: var(--s5);
+  background: linear-gradient(
+    to bottom,
+    #031a27 0%,
+    #083e4c 26%,
+    #0f7385 46%,
+    #2bb3bf 59%,
+    #9be6d6 70%
+  );
+}
+.skyKala {
+  opacity: var(--s6);
+  background: linear-gradient(
+    to bottom,
+    #090612 0%,
+    #150f2a 28%,
+    #2c2146 48%,
+    #54406f 61%,
+    #8a789c 70%
+  );
+}
+
+/* Soft haze sitting on the horizon, tinted by whatever sky is showing through. */
+.haze {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--u) * 84);
+  height: calc(var(--u) * 70);
+  background: linear-gradient(
+    to top,
+    rgba(248, 244, 236, 0.28),
+    rgba(248, 244, 236, 0)
+  );
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------- layers */
+.layer {
+  position: absolute;
+  left: var(--hx);
+  bottom: 0;
+  width: 0;
+  height: 0;
+  /* --travel = TRAVEL * parallax factor, set inline */
+  transform: translate3d(calc(var(--p) * var(--u) * var(--travel) * -1), 0, 0);
+  will-change: transform;
+}
+
+.item {
+  position: absolute;
+  display: block;
+  max-width: none;
+  left: calc(var(--u) * var(--x));
+  bottom: calc(var(--u) * var(--b));
+  width: calc(var(--u) * var(--w));
+  height: calc(var(--u) * var(--h));
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  pointer-events: none;
+  user-select: none;
+}
+.flip {
+  transform: scaleX(-1);
+}
+
+/* Silhouettes: flat and faint on the ridge, a little detail on the landmarks. */
+.ridge .sil {
+  filter: brightness(0);
+  opacity: 0.26;
+}
+.far .sil {
+  filter: brightness(0.22) saturate(0.6);
+  opacity: 0.8;
+}
+.dim {
+  filter: brightness(0.6) saturate(0.85);
+}
+.dark {
+  filter: brightness(0.12) saturate(0.6);
+}
+.glow {
+  opacity: 0.75;
+  mix-blend-mode: screen;
+  image-rendering: auto;
+}
+.eclipse {
+  opacity: var(--s6);
+}
+
+.mist {
+  opacity: 0.34;
+  animation: mistDrift 17s ease-in-out infinite alternate;
+}
+@keyframes mistDrift {
+  from {
+    transform: translate3d(calc(var(--u) * -14), 0, 0);
+  }
+  to {
+    transform: translate3d(calc(var(--u) * 14), 0, 0);
+  }
+}
+
+.firefly {
+  filter: drop-shadow(0 0 calc(var(--u) * 1.5) #fce09b)
+    drop-shadow(0 0 calc(var(--u) * 0.5) #fce09b);
+  animation: firefly 5.5s ease-in-out infinite;
+}
+@keyframes firefly {
+  0%,
+  100% {
+    opacity: 0.1;
+    transform: translate3d(0, 0, 0);
+  }
+  30% {
+    opacity: 1;
+    transform: translate3d(calc(var(--u) * 5), calc(var(--u) * -4), 0);
+  }
+  60% {
+    opacity: 0.25;
+    transform: translate3d(calc(var(--u) * -3), calc(var(--u) * -8), 0);
+  }
+  80% {
+    opacity: 0.9;
+    transform: translate3d(calc(var(--u) * 2), calc(var(--u) * -3), 0);
+  }
+}
+
+/* ------------------------------------------------------------- ground */
+.ground {
+  position: absolute;
+  bottom: 0;
+  left: calc(var(--u) * var(--x));
+  width: calc(var(--u) * var(--w));
+  height: calc(var(--u) * 96);
+}
+.groundFade {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 calc(var(--u) * 40)
+  );
+  mask-image: linear-gradient(to right, transparent 0, #000 calc(var(--u) * 40));
+}
+.strip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--u) * 16 * var(--i));
+  height: calc(var(--u) * 16 + 1px);
+  background-repeat: repeat-x;
+  background-size: calc(var(--u) * 128) calc(var(--u) * 1152);
+  background-position: 0 calc(var(--u) * -16 * var(--row));
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+/* A hint of depth: the far edge of the ground is slightly shaded. */
+.groundShade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(9, 6, 18, 0.34) 0,
+    rgba(9, 6, 18, 0) 34%,
+    rgba(9, 6, 18, 0) 70%,
+    rgba(9, 6, 18, 0.3) 100%
+  );
+}
+
+/* ---------------------------------------------------------------- sea */
+.sea {
+  position: absolute;
+  left: calc(var(--u) * var(--x));
+  bottom: calc(var(--u) * var(--b));
+  width: calc(var(--u) * var(--w));
+  height: calc(var(--u) * var(--h));
+  background: linear-gradient(
+    to bottom,
+    #7fe3d6 0,
+    #2bb3bf calc(var(--u) * 2),
+    #1ca3b8 calc(var(--u) * 8),
+    #0f7385 55%,
+    #0a4f66 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 calc(var(--u) * 36),
+    #000 calc(100% - var(--u) * 36),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 calc(var(--u) * 36),
+    #000 calc(100% - var(--u) * 36),
+    transparent 100%
+  );
+  overflow: hidden;
+}
+.sea::before,
+.sea::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(214, 255, 247, 0.55) 0,
+    rgba(214, 255, 247, 0.55) calc(var(--u) * 6),
+    transparent calc(var(--u) * 6),
+    transparent calc(var(--u) * 22)
+  );
+  background-size: calc(var(--u) * 44) calc(var(--u) * 1);
+  background-repeat: repeat-x;
+  background-position: 0 calc(var(--u) * 9);
+  animation: seaGlint 5s linear infinite;
+}
+.sea::after {
+  background-position: calc(var(--u) * 15) calc(var(--u) * 24);
+  opacity: 0.6;
+  animation-duration: 8s;
+  animation-direction: reverse;
+}
+@keyframes seaGlint {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(calc(var(--u) * -44), 0, 0);
+  }
+}
+.sea::before,
+.sea::after {
+  right: calc(var(--u) * -44);
+}
+
+/* ------------------------------------------------------------ sprites */
+.critter {
+  position: absolute;
+  left: calc(var(--u) * var(--x));
+  bottom: calc(var(--u) * var(--b));
+}
+.usprite {
+  width: calc(var(--u) * var(--fw));
+  height: calc(var(--u) * var(--fh));
+  background-size: calc(var(--u) * var(--sw)) calc(var(--u) * var(--sh));
+  background-position-y: calc(var(--u) * var(--row) * -1);
+}
+
+.patrol {
+  animation: patrol 9s linear infinite;
+}
+@keyframes patrol {
+  0% {
+    transform: translate3d(0, 0, 0) scaleX(1);
+  }
+  49.9% {
+    transform: translate3d(calc(var(--u) * 44), 0, 0) scaleX(1);
+  }
+  50% {
+    transform: translate3d(calc(var(--u) * 44), 0, 0) scaleX(-1);
+  }
+  99.9% {
+    transform: translate3d(0, 0, 0) scaleX(-1);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scaleX(1);
+  }
+}
+.bob {
+  animation: bob 3.4s ease-in-out infinite alternate;
+}
+@keyframes bob {
+  from {
+    transform: translate3d(0, calc(var(--u) * 2), 0);
+  }
+  to {
+    transform: translate3d(0, calc(var(--u) * -5), 0);
+  }
+}
+.flutter {
+  animation: flutter 7s ease-in-out infinite alternate;
+}
+@keyframes flutter {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  35% {
+    transform: translate3d(calc(var(--u) * 14), calc(var(--u) * -9), 0);
+  }
+  70% {
+    transform: translate3d(calc(var(--u) * 24), calc(var(--u) * 3), 0);
+  }
+  100% {
+    transform: translate3d(calc(var(--u) * 36), calc(var(--u) * -6), 0);
+  }
+}
+
+/* --------------------------------------------------------------- hero */
+.hero {
+  position: absolute;
+  left: var(--hx);
+  bottom: calc(var(--u) * 44);
+  width: calc(var(--u) * 32);
+  height: calc(var(--u) * 32);
+}
+.heroShadow {
+  position: absolute;
+  left: calc(var(--u) * 6);
+  bottom: calc(var(--u) * -3);
+  width: calc(var(--u) * 20);
+  height: calc(var(--u) * 8);
+  max-width: none;
+  image-rendering: pixelated;
+  opacity: 0.7;
+}
+
+/* ----------------------------------------------------------- overlays */
+.grade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(9, 6, 18, 0.55) 0, rgba(9, 6, 18, 0) 34%),
+    radial-gradient(
+      ellipse 120% 100% at 50% 60%,
+      rgba(9, 6, 18, 0) 55%,
+      rgba(9, 6, 18, 0.5) 100%
+    );
+}
+/* Gua Kala swallows the frame: darkness closes around the hero. */
+.maw {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--dark);
+  background: radial-gradient(
+    ellipse 70% 60% at calc(var(--hx) + var(--u) * 60) calc(100% - var(--u) * 70),
+    rgba(9, 6, 18, 0) 0,
+    rgba(18, 10, 36, 0.82) 55%,
+    #090612 100%
+  );
+}
+
+/* ------------------------------------------------------------- titles */
+.titles {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: clamp(76px, 12svh, 132px);
+  padding: 0 clamp(16px, 5vw, 72px);
+  pointer-events: none;
+}
+.title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding: inherit;
+  text-align: center;
+  opacity: calc(var(--in) * (1 - var(--out)));
+  transform: translate3d(
+    calc((1 - var(--in)) * 5vw - var(--out) * 5vw),
+    0,
+    0
+  );
+  will-change: transform, opacity;
+}
+.name {
+  margin: 0;
+  font-size: clamp(3rem, 12.5vw, 9.5rem);
+  line-height: 0.82;
+  text-transform: uppercase;
+  color: #f8f4ec;
+  text-shadow:
+    0 0.045em 0 #0f0b1e,
+    0 0 0.4em rgba(9, 6, 18, 0.55);
+}
+.line {
+  margin: clamp(8px, 1.4svh, 16px) 0 0;
+  font-size: clamp(0.7rem, 1.25vw, 1rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #fce09b;
+  text-shadow:
+    0 2px 0 #0f0b1e,
+    0 0 12px rgba(9, 6, 18, 0.9);
+}
+.titleKala .line {
+  color: #5ef2ff;
+}
+
+.opening {
+  opacity: calc(1 - var(--openOut));
+  transform: translate3d(calc(var(--openOut) * -5vw), 0, 0);
+}
+.openingLine {
+  margin: 0;
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
+  line-height: 0.95;
+  color: #f8f4ec;
+  text-shadow:
+    0 4px 0 #0f0b1e,
+    0 0 0.5em rgba(9, 6, 18, 0.7);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mist,
+  .firefly,
+  .patrol,
+  .bob,
+  .flutter,
+  .sea::before,
+  .sea::after {
+    animation: none;
+  }
+  .firefly {
+    opacity: 0.7;
+  }
+}

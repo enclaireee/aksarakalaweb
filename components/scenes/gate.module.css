@@ -1,0 +1,504 @@
+/* Gate scene: twilight title parallax with a scroll push-in through the candi gate.
+   Scroll vars (from <Scene>): --p, --push, --cue, --titleOut, --dark, --black.
+   Mouse vars (from GateScene): --mx, --my in -1..1. */
+
+.root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #1e1432;
+  /* One native art pixel, sized so the 480x270 stage covers the viewport. */
+  --u: max(100vw / 480, 100svh / 270);
+  --mx: 0;
+  --my: 0;
+  /* Eased push (ease-in): slow drift first, then the rush through the gate. */
+  --z: calc(var(--push) * var(--push));
+}
+
+/* ---------- parallax stage ---------- */
+
+.stage {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: calc(480 * var(--u));
+  height: calc(270 * var(--u));
+  margin-left: calc(-240 * var(--u));
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  /* The gate (the two pillars + lintel in title_far) sits at 277,165 of 480x270. */
+  transform-origin: 57.7% 61%;
+  will-change: transform;
+  user-select: none;
+  pointer-events: none;
+}
+
+.sky {
+  transform: translate3d(calc(var(--mx) * -5px), calc(var(--my) * -3px), 0)
+    scale(calc(1.03 + var(--z) * 0.7));
+}
+
+.far {
+  transform: translate3d(calc(var(--mx) * -11px), calc(var(--my) * -6px), 0)
+    scale(calc(1.04 + var(--z) * 8));
+}
+
+.mawLayer {
+  transform: translate3d(calc(var(--mx) * -11px), calc(var(--my) * -6px), 0);
+}
+
+/* Darkness that pours out of the gate and swallows the frame. */
+.maw {
+  position: absolute;
+  left: 57.7%;
+  top: 61%;
+  width: calc(60 * var(--u));
+  height: calc(60 * var(--u));
+  margin: calc(-30 * var(--u)) 0 0 calc(-30 * var(--u));
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    #090612 0,
+    #090612 42%,
+    rgba(9, 6, 18, 0.6) 55%,
+    rgba(9, 6, 18, 0) 70%
+  );
+  transform: scale(calc(var(--dark) * var(--dark) * 32));
+  will-change: transform;
+}
+
+.near {
+  transform: translate3d(calc(var(--mx) * -22px), calc(var(--my) * -10px), 0)
+    scale(calc(1.06 + var(--z) * 16));
+}
+
+/* ---------- stars ---------- */
+
+.stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: calc(1 - var(--dark));
+  transform: translate3d(calc(var(--mx) * -3px), calc(var(--my) * -2px), 0);
+}
+
+.star {
+  position: absolute;
+  background: #f8f4ec;
+  box-shadow: 0 0 6px rgba(213, 226, 240, 0.8);
+  animation: twinkle 3.2s ease-in-out infinite;
+}
+
+.constellation {
+  position: absolute;
+  top: 13%;
+  right: 7%;
+  width: calc(67 * 1.4 * var(--u));
+  height: auto;
+  max-width: none;
+  animation: twinkle 5.5s ease-in-out infinite;
+  display: none;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---------- floating glyphs ---------- */
+
+.glyphs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: calc(1 - var(--titleOut));
+  transform: translate3d(calc(var(--mx) * -16px), calc(var(--my) * -9px), 0)
+    scale(calc(1 + var(--z) * 3));
+  transform-origin: 57.7% 61%;
+}
+
+.glyph {
+  position: absolute;
+  --gs: 1;
+  width: calc(var(--gw) * var(--gs) * var(--u));
+  height: calc(var(--gh) * var(--gs) * var(--u));
+}
+
+.glyphDrift {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  animation-name: drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.glyphDrift img {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+.glyphGlow {
+  position: absolute;
+  inset: -75%;
+  background: url("/game/art/ui/title_glow.png") center / contain no-repeat;
+  image-rendering: pixelated;
+  animation: pulse 3.4s ease-in-out infinite;
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  35% {
+    transform: translate3d(5px, -9px, 0);
+  }
+  70% {
+    transform: translate3d(-4px, -3px, 0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Narrow / portrait: a band of glyphs between the buttons and the horizon. */
+.glyph_ka {
+  left: 6%;
+  top: 49%;
+}
+.glyph_ra {
+  left: 30%;
+  top: 46%;
+}
+.glyph_la {
+  left: 56%;
+  top: 50%;
+}
+.glyph_ja {
+  left: 78%;
+  top: 46.5%;
+}
+
+/* Landscape: glyphs flank the title instead. */
+@media (min-aspect-ratio: 4/3) {
+  .glyph_ka {
+    left: 5%;
+    top: 24%;
+  }
+  .glyph_la {
+    left: 12%;
+    top: 47%;
+  }
+  .glyph_ja {
+    left: auto;
+    right: 6%;
+    top: 40%;
+  }
+  .glyph_ra {
+    left: auto;
+    right: 13%;
+    top: 55%;
+  }
+  .constellation {
+    display: block;
+  }
+}
+
+/* ---------- hero ---------- */
+
+.hero {
+  position: absolute;
+  --hs: 1.25;
+  left: calc(50% - min(44vw, 215 * var(--u)));
+  bottom: calc(-5 * var(--u));
+  transform-origin: 30% 100%;
+  transform: translate3d(
+      calc(var(--mx) * -30px - var(--z) * 45vw),
+      calc(var(--my) * -8px + var(--z) * 35%),
+      0
+    )
+    scale(calc(1 + var(--z) * 1.8));
+  will-change: transform;
+  pointer-events: none;
+}
+
+.heroSprite {
+  position: relative;
+  width: calc(64 * var(--hs) * var(--u));
+  height: calc(96 * var(--hs) * var(--u));
+  background: url("/game/art/intro/hero_storm.png") 0 0 / calc(192 * var(--hs) * var(--u))
+    100% no-repeat;
+  image-rendering: pixelated;
+  /* Frames 0-1: cloak and scarf in the wind (frame 2 is the staff raise). */
+  animation: heroIdle 1.1s steps(2) infinite;
+}
+
+@keyframes heroIdle {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: calc(-128 * var(--hs) * var(--u));
+  }
+}
+
+/* Cyan ember on the staff head (staff gem sits near 16,4 of the 64x96 frame). */
+.staffGlow {
+  position: absolute;
+  left: calc((16 - 20) * var(--hs) * var(--u));
+  top: calc((4 - 20) * var(--hs) * var(--u));
+  width: calc(40 * var(--hs) * var(--u));
+  height: calc(40 * var(--hs) * var(--u));
+  background: url("/game/art/ui/title_glow.png") center / contain no-repeat;
+  image-rendering: pixelated;
+  animation: pulse 2.6s ease-in-out infinite;
+}
+
+@media (max-height: 480px) {
+  .hero {
+    --hs: 0.9;
+  }
+}
+
+/* ---------- overlays ---------- */
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    url("/game/art/ui/vignette.png") center / 100% 100% no-repeat,
+    linear-gradient(to bottom, rgba(9, 6, 18, 0.55) 0, rgba(9, 6, 18, 0) 22%);
+  pointer-events: none;
+}
+
+.black {
+  position: absolute;
+  inset: 0;
+  background: #090612;
+  opacity: var(--black);
+  pointer-events: none;
+}
+
+/* ---------- title block ---------- */
+
+.copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: clamp(72px, 12svh, 128px);
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+  opacity: calc(1 - var(--titleOut));
+  transform: translate3d(0, calc(var(--titleOut) * -7svh), 0)
+    scale(calc(1 + var(--titleOut) * 0.08));
+  will-change: transform, opacity;
+}
+
+.copyInner {
+  position: relative;
+  width: 100%;
+  max-width: 36rem;
+  text-align: center;
+  animation: rise 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* Soft scrim so the title reads over the bright dusk band. */
+.copyInner::before {
+  content: "";
+  position: absolute;
+  inset: -18% -22%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(15, 11, 30, 0.62) 0,
+    rgba(15, 11, 30, 0.32) 45%,
+    rgba(15, 11, 30, 0) 72%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.title {
+  margin: 0;
+  color: #f8f4ec;
+  font-size: clamp(3.25rem, min(12vw, 17svh), 8rem);
+  line-height: 0.88;
+  white-space: nowrap;
+  text-shadow:
+    0 4px 0 #0f0b1e,
+    0 0 34px rgba(252, 224, 155, 0.35);
+}
+
+.subtitle {
+  margin: clamp(6px, 1.2svh, 14px) 0 0;
+  color: #fce09b;
+  font-size: clamp(0.8rem, 1.6vw, 1.05rem);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 0 #0f0b1e;
+}
+
+.hook {
+  margin: clamp(10px, 2svh, 20px) auto 0;
+  max-width: 30rem;
+  color: #f8f4ec;
+  font-size: clamp(0.95rem, 1.5vw, 1.15rem);
+  line-height: 1.45;
+  text-shadow: 0 1px 0 #0f0b1e, 0 0 12px rgba(15, 11, 30, 0.9);
+}
+
+.actions {
+  margin-top: clamp(14px, 2.6svh, 28px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.3em 1.05em 0.36em;
+  font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  border: 2px solid #0f0b1e;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    background-color 120ms ease;
+}
+
+.btn:focus-visible {
+  outline: 2px solid #5ef2ff;
+  outline-offset: 3px;
+}
+
+.btnPrimary {
+  background: #fce09b;
+  color: #1b1433;
+  box-shadow:
+    0 4px 0 #b06a3a,
+    0 0 26px rgba(252, 224, 155, 0.45);
+}
+
+.btnPrimary:hover {
+  background: #fff0c4;
+  transform: translate3d(0, -2px, 0);
+  box-shadow:
+    0 6px 0 #b06a3a,
+    0 0 34px rgba(252, 224, 155, 0.65);
+}
+
+.btnPrimary:active {
+  transform: translate3d(0, 3px, 0);
+  box-shadow: 0 1px 0 #b06a3a;
+}
+
+.btnGhost {
+  background: rgba(15, 11, 30, 0.5);
+  color: #f8f4ec;
+  border-color: rgba(248, 244, 236, 0.65);
+  box-shadow: 0 4px 0 rgba(15, 11, 30, 0.7);
+}
+
+.btnGhost:hover {
+  border-color: #5ef2ff;
+  color: #5ef2ff;
+  transform: translate3d(0, -2px, 0);
+}
+
+/* ---------- scroll cue ---------- */
+
+.cue {
+  position: absolute;
+  left: 72%;
+  bottom: clamp(14px, 3.5svh, 32px);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #f8f4ec;
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 #0f0b1e;
+  opacity: calc(1 - var(--cue));
+  pointer-events: none;
+}
+
+@media (min-aspect-ratio: 4/3) {
+  .cue {
+    left: 50%;
+  }
+}
+
+.cueArrow {
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #fce09b;
+  border-bottom: 2px solid #fce09b;
+  transform: rotate(45deg);
+  animation: bob 1.4s ease-in-out infinite;
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translate3d(0, -2px, 0) rotate(45deg);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate3d(0, 4px, 0) rotate(45deg);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star,
+  .constellation,
+  .glyphDrift,
+  .glyphGlow,
+  .heroSprite,
+  .staffGlow,
+  .cueArrow,
+  .copyInner {
+    animation: none;
+  }
+}

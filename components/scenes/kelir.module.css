@@ -1,0 +1,620 @@
+/* Kelir scene: the night of the wayang.
+   Scroll vars (from <Scene>): --p, puppet entrances --sem --arj --cep --put --aji --but,
+   --l1In/--l1Out, --kalaIn, step vars --pose1/--pose2, --tide, --dim, --l2In/--l2Out,
+   --black (snap), --end (final line). */
+
+.root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #0c0706;
+  /* One native art pixel, sized so the 480x272 stage covers the viewport. */
+  --u: max(100vw / 480, 100svh / 272);
+  --anchor: 0.35; /* how much of the vertical overflow is cropped from the top */
+  --ms: 2; /* musicians */
+  --ps: 1.5; /* puppets */
+  --gs: 2; /* gunungan */
+  --ks: 1.3; /* Kala */
+  --ls: 2.2; /* blencong */
+  --rest: 0%; /* how far off the edge Kala stays once fully in */
+}
+
+@media (max-aspect-ratio: 3/2) {
+  .root {
+    --ms: 1.5;
+  }
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .root {
+    --ms: 1.8;
+    --ps: 1.3;
+    --gs: 1.7;
+  }
+}
+
+@media (max-aspect-ratio: 3/4) {
+  .root {
+    --ms: 1.6;
+    --ps: 1.2;
+    --gs: 1.6;
+    --ks: 1.1;
+    --rest: 25%;
+  }
+}
+
+@media (min-aspect-ratio: 2/1) {
+  .root {
+    --ms: 1.4;
+    --anchor: 0.5;
+  }
+}
+
+/* ---------- the set ---------- */
+
+.set {
+  position: absolute;
+  left: 50%;
+  top: calc((100svh - 272 * var(--u)) * var(--anchor));
+  width: calc(480 * var(--u));
+  height: calc(272 * var(--u));
+  margin-left: calc(-240 * var(--u));
+  transform-origin: 50% 35%;
+  /* slow push-in toward the cloth over the whole scene */
+  transform: scale(calc(1 + var(--p) * 0.06));
+  will-change: transform;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  user-select: none;
+}
+
+/* Cloth area of k0_screen.png: x 14..466, y 20..148 */
+.cloth {
+  position: absolute;
+  left: calc(14 * var(--u));
+  top: calc(20 * var(--u));
+  width: calc(452 * var(--u));
+  height: calc(128 * var(--u));
+  overflow: hidden;
+}
+
+.clothGlowDim {
+  position: absolute;
+  inset: 0;
+  opacity: calc(1 - var(--dim) * 0.75);
+}
+
+.clothGlow {
+  position: absolute;
+  left: 50%;
+  top: calc(-96 * var(--u));
+  width: calc(340 * var(--u));
+  height: calc(340 * var(--u));
+  margin-left: calc(-170 * var(--u));
+  background: url("/game/art/cutscene/lamp_glow.png") center / contain no-repeat;
+  animation: flicker 2.7s linear infinite;
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 0.95;
+  }
+  12% {
+    opacity: 0.78;
+  }
+  21% {
+    opacity: 1;
+  }
+  38% {
+    opacity: 0.84;
+  }
+  47% {
+    opacity: 0.97;
+  }
+  63% {
+    opacity: 0.74;
+  }
+  71% {
+    opacity: 0.92;
+  }
+  86% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes gutter {
+  0% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 0.25;
+  }
+  35% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  65% {
+    opacity: 0.6;
+  }
+  80% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0.9;
+  }
+}
+
+.root[data-gutter="true"] .clothGlow {
+  animation: gutter 0.55s steps(7) infinite;
+}
+
+/* ---------- puppets ---------- */
+
+.gunungan {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: calc(24 * var(--gs) * var(--u));
+  height: calc(42 * var(--gs) * var(--u));
+  margin-left: calc(-12 * var(--gs) * var(--u));
+  opacity: 0.94;
+}
+
+.puppet {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: calc(var(--w) * var(--ps) * var(--u));
+  height: calc(var(--h) * var(--ps) * var(--u));
+  margin-left: calc(var(--w) * var(--ps) * var(--u) / -2);
+  /* walks in from its side of the cloth */
+  transform: translate3d(
+    calc(var(--dir) * (var(--off) + (1 - var(--v)) * 70 * var(--u))),
+    0,
+    0
+  );
+  opacity: calc(min(1, var(--v) * 3) * 0.94);
+  will-change: transform, opacity;
+}
+
+.slot1 {
+  --off: min(22vw, 46 * var(--u));
+}
+.slot2 {
+  --off: min(40vw, 88 * var(--u));
+}
+.slot3 {
+  --off: min(47vw, 130 * var(--u));
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .slot3 {
+    display: none;
+  }
+}
+
+.puppetFace {
+  width: 100%;
+  height: 100%;
+}
+
+.sway {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  transform-origin: 50% 100%;
+  animation: sway 5s ease-in-out infinite;
+  user-select: none;
+}
+
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-2.2deg);
+  }
+  50% {
+    transform: rotate(2.2deg);
+  }
+}
+
+/* ---------- Kala + the shadow tide ---------- */
+
+.tide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  display: flex;
+  width: calc(640 * var(--u));
+  /* tide 0: leading edge parked at the right edge; tide 1: edge fully past the left edge */
+  transform: translate3d(
+    calc(
+      (1 - 2 * var(--tide)) * min(50vw, 226 * var(--u)) - var(--tide) * 80 *
+        var(--u)
+    ),
+    0,
+    0
+  );
+  will-change: transform;
+}
+
+/* shadow_tide.png: 4 frames of 40x64, drawn at 2x so one tile is the cloth height */
+.tideEdge {
+  flex: none;
+  width: calc(80 * var(--u));
+  height: 100%;
+  background: url("/game/art/cutscene/shadow_tide.png") 0 0 / calc(320 * var(--u))
+    100% repeat-y;
+  image-rendering: pixelated;
+  animation: tideEdge 0.8s steps(4) infinite;
+}
+
+@keyframes tideEdge {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: calc(-320 * var(--u));
+  }
+}
+
+.tideFill {
+  flex: 1;
+  margin-left: -1px;
+  background: #0b0610;
+}
+
+.kala {
+  position: absolute;
+  bottom: 0;
+  /* hug the cloth's right edge, or the viewport's if the cloth runs off-screen */
+  right: max(0px, calc(226 * var(--u) - 50vw));
+  transform: translate3d(
+    calc((1 - var(--kalaIn)) * 108% + var(--kalaIn) * var(--rest)),
+    0,
+    0
+  );
+  will-change: transform;
+}
+
+.kalaSprite {
+  width: calc(96 * var(--ks) * var(--u));
+  height: calc(96 * var(--ks) * var(--u));
+  background-image: url("/game/art/cutscene/k0_kala.png");
+  background-repeat: no-repeat;
+  background-size: calc(288 * var(--ks) * var(--u)) 100%;
+  /* three poses; --pose1 / --pose2 are step vars so this jumps frame by frame */
+  background-position-x: calc(
+    (var(--pose1) + var(--pose2)) * -96 * var(--ks) * var(--u)
+  );
+  image-rendering: pixelated;
+  transform-origin: 100% 100%;
+  animation: loom 4.2s ease-in-out infinite;
+}
+
+@keyframes loom {
+  0%,
+  100% {
+    transform: rotate(0.8deg);
+  }
+  50% {
+    transform: rotate(-1.2deg);
+  }
+}
+
+/* ---------- generic sprite strip in --u units ---------- */
+
+.strip {
+  width: calc(var(--fw) * var(--sc) * var(--u));
+  height: calc(var(--fh) * var(--sc) * var(--u));
+  background-repeat: no-repeat;
+  background-size: calc(
+      var(--fw) * (var(--start, 0) + var(--n)) * var(--sc) * var(--u)
+    )
+    100%;
+  image-rendering: pixelated;
+  animation: strip calc(var(--n) / var(--fps) * 1s) steps(var(--n)) infinite;
+}
+
+@keyframes strip {
+  from {
+    background-position-x: calc(
+      var(--fw) * var(--start, 0) * var(--sc) * var(--u) * -1
+    );
+  }
+  to {
+    background-position-x: calc(
+      var(--fw) * (var(--start, 0) + var(--n)) * var(--sc) * var(--u) * -1
+    );
+  }
+}
+
+/* ---------- lamp ---------- */
+
+.lamp {
+  position: absolute;
+  left: 50%;
+  top: calc(20 * var(--u));
+  margin-left: calc(-7 * var(--ls) * var(--u));
+}
+
+.lampFlicker {
+  position: relative;
+}
+
+.root[data-gutter="true"] .lampFlicker {
+  animation: gutter 0.55s steps(7) infinite;
+}
+
+.lampHalo {
+  position: absolute;
+  left: 50%;
+  top: calc(8 * var(--ls) * var(--u));
+  width: calc(70 * var(--u));
+  height: calc(70 * var(--u));
+  margin: calc(-35 * var(--u)) 0 0 calc(-35 * var(--u));
+  background: url("/game/art/cutscene/lamp_glow.png") center / contain no-repeat;
+  animation: flicker 1.9s linear infinite;
+}
+
+/* ---------- gamelan ---------- */
+
+.gamelan {
+  position: absolute;
+  left: 50%;
+  bottom: calc(58 * var(--u));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: calc(6 * var(--ms) * var(--u));
+}
+
+.station {
+  position: relative;
+  flex: none;
+}
+
+.player {
+  position: absolute;
+}
+
+.playerBob {
+  width: calc(20 * var(--ms) * var(--u));
+  height: calc(22 * var(--ms) * var(--u));
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+  animation: bob 0.66s steps(2) infinite;
+}
+
+@keyframes bob {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(0, calc(2 * var(--ms) * var(--u)), 0);
+  }
+}
+
+.instrument {
+  position: absolute;
+  bottom: 0;
+  height: auto;
+  max-width: none;
+  user-select: none;
+}
+
+.station_gong {
+  width: calc(40 * var(--ms) * var(--u));
+  height: calc(24 * var(--ms) * var(--u));
+}
+.station_gong .instrument {
+  left: 0;
+  width: calc(18 * var(--ms) * var(--u));
+}
+.station_gong .player {
+  left: calc(19 * var(--ms) * var(--u));
+  bottom: 0;
+}
+
+.station_saron {
+  width: calc(27.2 * var(--ms) * var(--u));
+  height: calc(29 * var(--ms) * var(--u));
+}
+.station_saron .instrument {
+  left: 0;
+  width: 100%;
+}
+.station_saron .player {
+  left: calc(3.6 * var(--ms) * var(--u));
+  bottom: calc(7 * var(--ms) * var(--u));
+}
+
+.station_kendang {
+  width: calc(20 * var(--ms) * var(--u));
+  height: calc(27 * var(--ms) * var(--u));
+}
+.station_kendang .instrument {
+  left: calc(1 * var(--ms) * var(--u));
+  width: calc(18 * var(--ms) * var(--u));
+}
+.station_kendang .player {
+  left: 0;
+  bottom: calc(5 * var(--ms) * var(--u));
+}
+
+.stand {
+  position: absolute;
+  bottom: calc(52 * var(--u));
+}
+.standL {
+  left: calc(50% - min(46vw, 208 * var(--u)) - 16 * var(--u));
+}
+.standR {
+  left: calc(50% + min(46vw, 208 * var(--u)) - 16 * var(--u));
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .station_gong,
+  .stand {
+    display: none;
+  }
+}
+
+/* ---------- atmosphere ---------- */
+
+.dim {
+  position: absolute;
+  inset: 0;
+  background: #090612;
+  opacity: calc(var(--dim) * 0.55);
+  pointer-events: none;
+}
+
+.motes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: calc(1 - var(--dim));
+}
+
+.mote {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #fce09b;
+  box-shadow: 0 0 6px rgba(244, 157, 90, 0.9);
+  opacity: 0;
+  animation: mote 8s linear infinite;
+}
+
+@keyframes mote {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  70% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate3d(14px, -22svh, 0);
+    opacity: 0;
+  }
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    url("/game/art/ui/vignette.png") center / 100% 100% no-repeat,
+    linear-gradient(to top, rgba(9, 6, 18, 0.8) 0, rgba(9, 6, 18, 0) 30%);
+  pointer-events: none;
+}
+
+/* ---------- copy ---------- */
+
+.copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(16px, 4.5svh, 52px);
+  display: grid;
+  justify-items: center;
+  align-items: end;
+  padding: 0 20px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.line {
+  grid-area: 1 / 1;
+  max-width: 44rem;
+  will-change: transform, opacity;
+}
+
+.line1 {
+  opacity: calc(var(--l1In) * (1 - var(--l1Out)));
+  transform: translate3d(0, calc((1 - var(--l1In)) * 14px - var(--l1Out) * 10px), 0);
+}
+
+.line2 {
+  opacity: calc(var(--l2In) * (1 - var(--l2Out)));
+  transform: translate3d(0, calc((1 - var(--l2In)) * 14px - var(--l2Out) * 10px), 0);
+}
+
+.place {
+  margin: 0 0 6px;
+  color: #fce09b;
+  font-size: clamp(0.68rem, 1.2vw, 0.85rem);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 #0f0b1e;
+}
+
+.headline {
+  margin: 0;
+  color: #f8f4ec;
+  font-size: min(clamp(2.25rem, 6vw, 4.5rem), calc(22 * var(--u)));
+  line-height: 0.95;
+  text-wrap: balance;
+  text-shadow:
+    0 4px 0 #0f0b1e,
+    0 0 22px rgba(9, 6, 18, 0.95);
+}
+
+.black {
+  position: absolute;
+  inset: 0;
+  background: #090612;
+  opacity: var(--black);
+  pointer-events: none;
+}
+
+.final {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  margin: 0;
+  padding: 0 20px;
+  transform: translate3d(0, -50%, 0);
+  text-align: center;
+  color: #f8f4ec;
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
+  line-height: 1;
+  opacity: var(--end);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clothGlow,
+  .root[data-gutter="true"] .clothGlow,
+  .root[data-gutter="true"] .lampFlicker,
+  .sway,
+  .tideEdge,
+  .kalaSprite,
+  .strip,
+  .lampHalo,
+  .playerBob,
+  .mote {
+    animation: none;
+  }
+  .strip {
+    background-position-x: calc(
+      var(--fw) * var(--start, 0) * var(--sc) * var(--u) * -1
+    );
+  }
+}

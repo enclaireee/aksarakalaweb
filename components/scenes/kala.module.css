@@ -1,0 +1,820 @@
+/* KalaScene: the Eclipse. All scroll-driven values read the scene's custom properties. */
+
+.root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #090612;
+  /* One native (480x270) pixel. Landscape: cover. Portrait: keep >= 200 native px of width in view. */
+  --u: max(100vw / 480, min(100svh / 270, 100vw / 200));
+  /* Close-up always covers. */
+  --uc: max(100vw / 480, 100svh / 270);
+  /* Camera: keep Kala's face (x = 196) centred when the world is wider than the viewport. */
+  --camX: clamp(100vw - 480 * var(--u), 50vw - 196 * var(--u), 0px);
+  /* Sky box sits between top- and bottom-anchored when the viewport is not 16:9. */
+  --skyTop: calc((100svh - 270 * var(--u)) * 0.4);
+  /* Narrow viewports: slide the crag (and the hero on it) left so both stay in frame. */
+  --cragShift: max(0px, 210 * var(--u) - 50vw);
+  /* Hard cut to the close-up for 0.45 <= p < 0.635 (keep in sync with KalaScene.tsx). */
+  --closeOn: calc(
+    clamp(0, (var(--p, 0) - 0.45) * 2000, 1) *
+      clamp(0, (0.635 - var(--p, 0)) * 2000, 1)
+  );
+}
+
+.shaker {
+  position: absolute;
+  inset: 0;
+  transform: scale(1.02);
+}
+
+/* ------------------------------------------------------------------ wide shot */
+
+.wide {
+  position: absolute;
+  inset: 0;
+}
+
+.skyWrap {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 40%;
+  transform: scale(calc(1.08 + 0.08 * var(--p, 0)));
+}
+
+.sky,
+.dawn {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: bottom;
+}
+
+.sky {
+  animation: skyDrift 26s ease-in-out infinite alternate;
+}
+
+.dawn {
+  opacity: var(--b1, 0);
+}
+
+.skyBox,
+.landBox {
+  position: absolute;
+  left: var(--camX);
+  width: calc(480 * var(--u));
+  height: calc(270 * var(--u));
+}
+
+.skyBox {
+  top: var(--skyTop);
+}
+
+.landBox {
+  bottom: 0;
+}
+
+/* Kala's face in the cloud (pivot = KA_POS 196,96) */
+.kalaFace {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 40.83% 35.56%;
+  opacity: calc(var(--form, 0) * 0.94 * (1 - var(--b1, 0)));
+  transform: scale(
+    calc(0.84 + 0.16 * var(--form, 0) + 0.04 * var(--write, 0) + 0.35 * var(--b1, 0))
+  );
+}
+
+.kalaEyes {
+  position: absolute;
+  inset: 0;
+  transform-origin: 40.83% 38.9%;
+  opacity: calc(var(--eyes, 0) * (1 - var(--b1, 0)));
+  transform: scale(
+    calc(1 + 0.04 * var(--write, 0) + 0.35 * var(--b1, 0)),
+    calc((0.1 + 0.9 * var(--eyes, 0)) * (1 + 0.04 * var(--write, 0) + 0.35 * var(--b1, 0)))
+  );
+}
+
+.kalaEyesImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  animation: smoulder 0.37s ease-in-out infinite alternate;
+}
+
+.kalaGlow {
+  position: absolute;
+  left: calc(16 * var(--u));
+  top: calc(-20 * var(--u));
+  width: calc(360 * var(--u));
+  height: calc(240 * var(--u));
+  background: url("/game/art/intro/glow_red.png") center / 100% 100% no-repeat;
+  opacity: calc(
+    var(--eyes, 0) * (0.45 + 0.45 * var(--write, 0)) * (1 - var(--b1, 0))
+  );
+}
+
+/* lightning */
+.bolts {
+  position: absolute;
+  inset: 0;
+  opacity: calc(1 - var(--b1, 0));
+}
+
+.bolt {
+  position: absolute;
+  top: 0;
+  width: calc(120 * var(--u));
+  height: calc(200 * var(--u));
+  background-image: url("/game/art/intro/lightning.png");
+  background-size: calc(240 * var(--u)) calc(200 * var(--u));
+  background-repeat: no-repeat;
+  opacity: 0;
+}
+
+.boltA {
+  left: 64vw;
+  animation: boltA 6s linear infinite;
+}
+
+.boltB {
+  left: 3vw;
+  background-position-x: calc(-120 * var(--u));
+  animation: boltB 6s linear infinite;
+}
+
+/* land: the camera tilts down onto the crag, nearer layers travel further */
+.land {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.far {
+  transform: translate3d(0, calc((1 - var(--tilt, 0)) * 12 * var(--u)), 0);
+}
+
+.mid {
+  transform: translate3d(0, calc((1 - var(--tilt, 0)) * 24 * var(--u)), 0);
+}
+
+.crater {
+  position: absolute;
+  left: calc(266 * var(--u));
+  top: calc(38 * var(--u));
+  width: calc(360 * var(--u));
+  height: calc(240 * var(--u));
+  background: url("/game/art/intro/glow_red.png") center / 100% 100% no-repeat;
+  opacity: calc(0.5 * (1 - var(--b1, 0)));
+  transform: translate3d(0, calc((1 - var(--tilt, 0)) * 12 * var(--u)), 0);
+}
+
+.crag {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(
+    calc(-1 * var(--cragShift)),
+    calc((1 - var(--tilt, 0)) * 44 * var(--u)),
+    0
+  );
+}
+
+/* hero from behind on the crag: sprite top-left 342,111; 3 frames of 64x96 */
+.hero {
+  position: absolute;
+  left: calc(342 * var(--u));
+  top: calc(111 * var(--u));
+  width: calc(64 * var(--u));
+  height: calc(96 * var(--u));
+  background-image: url("/game/art/intro/hero_storm.png");
+  background-size: calc(192 * var(--u)) calc(96 * var(--u));
+  background-repeat: no-repeat;
+}
+
+.heroWind {
+  animation: flap 0.28s steps(2) infinite;
+}
+
+.heroRaised {
+  background-position-x: calc(-128 * var(--u));
+}
+
+/* staff gem when raised: 347,114 */
+.gem {
+  position: absolute;
+  left: calc(299 * var(--u));
+  top: calc(66 * var(--u));
+  width: calc(96 * var(--u));
+  height: calc(96 * var(--u));
+  background: url("/game/art/intro/glow_cyan.png") center / 100% 100% no-repeat;
+  opacity: 0;
+}
+
+.root[data-phase="2"] .gem,
+.root[data-phase="3"] .gem {
+  opacity: 1;
+  transition: opacity 0.3s ease-out;
+  animation: gemPulse 0.42s ease-in-out infinite alternate;
+}
+
+.beam {
+  position: absolute;
+  left: calc(327 * var(--u));
+  top: calc(-486 * var(--u));
+  width: calc(40 * var(--u));
+  height: calc(600 * var(--u));
+  background: url("/game/art/intro/beam.png") center / 100% 100% no-repeat;
+  transform-origin: 50% 100%;
+  opacity: calc(min(1, var(--b1, 0) * 12) * (1 - 0.4 * var(--flash, 0)));
+  transform: scaleX(calc(0.1 + 1.5 * var(--b1, 0)));
+}
+
+/* rings off the letter */
+.ring {
+  position: absolute;
+  left: calc(148 * var(--u));
+  top: calc(48 * var(--u));
+  width: calc(96 * var(--u));
+  height: calc(96 * var(--u));
+  background: url("/game/art/intro/ring.png") center / 100% 100% no-repeat;
+}
+
+.ring1 {
+  opacity: calc(min(1, var(--b1, 0) * 30) * (1 - var(--b1, 0)));
+  transform: scale(calc(0.2 + 7.8 * var(--b1, 0)));
+}
+
+.ring2 {
+  opacity: calc(min(1, var(--b2, 0) * 30) * (1 - var(--b2, 0)));
+  transform: scale(calc(0.2 + 7.8 * var(--b2, 0)));
+}
+
+.ring3 {
+  opacity: calc(min(1, var(--b3, 0) * 30) * (1 - var(--b3, 0)));
+  transform: scale(calc(0.2 + 7.8 * var(--b3, 0)));
+}
+
+/* Sunda Ka, written by scroll: 130x110 native box centred on 196,96 */
+.ka {
+  position: absolute;
+  left: calc(128.7 * var(--u));
+  top: calc(33.2 * var(--u));
+  width: calc(134.6 * var(--u));
+  height: calc(125.6 * var(--u));
+  overflow: visible;
+  opacity: calc(min(1, var(--write, 0) * 40) * (1 - var(--flash, 0)));
+}
+
+.ka path {
+  stroke-linejoin: miter;
+  stroke-linecap: butt;
+  stroke-dasharray: 1;
+  stroke-dashoffset: calc(1 - var(--write, 0));
+}
+
+.kaHalo {
+  stroke: rgba(64, 184, 191, 0.3);
+  stroke-width: 36;
+}
+
+.kaWet {
+  stroke: #2a6f7a;
+  stroke-width: 21;
+}
+
+.kaCore {
+  stroke: #7fe8e0;
+  stroke-width: 15;
+}
+
+.kaHot {
+  stroke: #ffffff;
+  stroke-width: 5;
+  opacity: 0.85;
+}
+
+/* ------------------------------------------------------------------ close-up */
+
+.close {
+  position: absolute;
+  inset: 0;
+  background: #14090f;
+  opacity: var(--closeOn);
+}
+
+.closeBox {
+  position: absolute;
+  /* portrait: pan from one eye to the other; landscape: both clamps collapse to 0 */
+  left: clamp(
+    100vw - 480 * var(--uc),
+    50vw - (125 + 235 * var(--push, 0)) * var(--uc),
+    0px
+  );
+  top: clamp(100svh - 270 * var(--uc), 50svh - 120 * var(--uc), 0px);
+  width: calc(480 * var(--uc));
+  height: calc(270 * var(--uc));
+  transform-origin: 50% 44.4%;
+  transform: scale(calc(1 + 0.12 * var(--push, 0)));
+}
+
+.closeFace,
+.closeEyes,
+.closeDark {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.closeDark {
+  background: #140c18;
+  opacity: 0.62;
+}
+
+.root[data-phase="1"] .closeDark {
+  opacity: 0.1;
+  transition: opacity 0.3s ease-out 0.32s;
+}
+
+.closeEyes {
+  transform-origin: 50% 44.4%;
+  opacity: 0;
+  transform: scaleY(0.1);
+}
+
+.root[data-phase="1"] .closeEyes {
+  animation:
+    eyesSnap 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) 0.32s forwards,
+    smoulder 0.33s ease-in-out 0.7s infinite alternate;
+}
+
+/* ------------------------------------------------------------------ atmosphere */
+
+.embers {
+  position: absolute;
+  inset: 0;
+  opacity: calc(1 - var(--b1, 0));
+}
+
+.ember {
+  position: absolute;
+  bottom: -6px;
+  width: 3px;
+  height: 3px;
+  opacity: 0;
+  animation: emberRise 5s linear infinite;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    rgba(9, 6, 18, 0) 55%,
+    rgba(9, 6, 18, 0.6) 100%
+  );
+  opacity: calc(1 - var(--b1, 0));
+}
+
+.stormFlash {
+  position: absolute;
+  inset: 0;
+  opacity: calc(1 - var(--b1, 0));
+}
+
+.stormFlashInner {
+  position: absolute;
+  inset: 0;
+  background: #c8b8ff;
+  opacity: 0;
+  animation: stormFlash 6s linear infinite;
+}
+
+.redFlash,
+.cutFlash,
+.whiteout {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.redFlash {
+  background: #d8324a;
+}
+
+.root[data-phase="1"] .redFlash {
+  animation: redOut 0.45s ease-out 0.32s forwards;
+}
+
+.cutFlash {
+  background: #fff7e6;
+}
+
+.root[data-phase="2"] .cutFlash {
+  animation: cutOut 0.3s ease-out forwards;
+}
+
+.root[data-phase="3"] .cutFlash {
+  animation: impactOut 0.7s ease-out forwards;
+}
+
+.whiteout {
+  background: #fff7e6;
+  opacity: var(--flash, 0);
+}
+
+.inkBox {
+  pointer-events: none;
+}
+
+.kaInk {
+  opacity: var(--ink, 0);
+}
+
+.kaInk path {
+  stroke: #1b1433;
+  stroke-width: 15;
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+}
+
+/* camera shake: one-shot kicks at each beat, a held rumble under them */
+.root[data-phase="1"] .shaker {
+  animation:
+    kickA 0.5s steps(1) 0.32s 1,
+    rumble 0.24s steps(1) 0.85s infinite;
+}
+
+.root[data-phase="2"] .shaker {
+  animation:
+    kickB 0.4s steps(1) 1,
+    rumble 0.2s steps(1) 0.4s infinite;
+}
+
+.root[data-phase="3"] .shaker {
+  animation: kickC 0.7s steps(1) 1;
+}
+
+/* ------------------------------------------------------------------ copy */
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(9, 6, 18, 0.55), rgba(9, 6, 18, 0) 18%),
+    linear-gradient(to top, rgba(9, 6, 18, 0.88), rgba(9, 6, 18, 0.5) 22%, rgba(9, 6, 18, 0) 48%);
+  opacity: calc((1 - var(--closeOn)) * (1 - var(--flash, 0)));
+}
+
+.captions {
+  position: absolute;
+  left: clamp(1.25rem, 6vw, 5.5rem);
+  bottom: clamp(1.5rem, 6svh, 4rem);
+  width: min(40rem, 56vw);
+  pointer-events: none;
+}
+
+.line {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  margin: 0;
+  color: #f8f4ec;
+  font-size: clamp(2rem, 5vw, 3.75rem);
+  line-height: 0.95;
+  text-shadow: 0 4px 0 #0f0b1e, 0 0 24px rgba(9, 6, 18, 0.9);
+  text-wrap: balance;
+}
+
+.line1 {
+  opacity: calc(var(--l1In, 0) * (1 - var(--l1Out, 0)));
+  transform: translate3d(0, calc((1 - var(--l1In, 0)) * 14px), 0);
+}
+
+.line2 {
+  color: #fce09b;
+  opacity: calc(var(--l2In, 0) * (1 - var(--l2Out, 0)));
+  transform: translate3d(0, calc((1 - var(--l2In, 0)) * 14px), 0);
+}
+
+.line3 {
+  opacity: calc(var(--hIn, 0) * (1 - var(--hOut, 0)));
+  transform: translate3d(0, calc((1 - var(--hIn, 0)) * 14px), 0);
+}
+
+.headline {
+  margin: 0;
+  font-size: inherit;
+  font-weight: 400;
+  line-height: inherit;
+}
+
+.sub {
+  margin: 0.9rem 0 0;
+  font-size: clamp(0.7rem, 1.1vw, 0.875rem);
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5ef2ff;
+  text-shadow: 0 2px 0 #0f0b1e, 0 0 12px rgba(9, 6, 18, 0.9);
+}
+
+.subGlyph {
+  margin-right: 0.6em;
+  font-size: 1.5em;
+  letter-spacing: 0;
+  text-transform: none;
+  vertical-align: -0.1em;
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .captions {
+    left: 1.25rem;
+    bottom: 1.5rem;
+    /* the hero stands on the right; keep the copy clear of them */
+    width: min(26rem, 62vw);
+  }
+
+  .line {
+    font-size: clamp(2rem, 9vw, 3.25rem);
+  }
+}
+
+/* ------------------------------------------------------------------ keyframes */
+
+@keyframes skyDrift {
+  from {
+    transform: translate3d(-1.5%, 0, 0) scale(1.06);
+  }
+  to {
+    transform: translate3d(1.5%, -1%, 0) scale(1.06);
+  }
+}
+
+@keyframes smoulder {
+  from {
+    opacity: 0.72;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gemPulse {
+  from {
+    transform: scale(0.9);
+  }
+  to {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes flap {
+  to {
+    background-position-x: calc(-128 * var(--u));
+  }
+}
+
+@keyframes boltA {
+  0%,
+  9.9% {
+    opacity: 0;
+  }
+  10%,
+  11% {
+    opacity: 1;
+  }
+  11.1%,
+  11.9% {
+    opacity: 0;
+  }
+  12%,
+  13.4% {
+    opacity: 1;
+  }
+  13.5%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes boltB {
+  0%,
+  57.9% {
+    opacity: 0;
+  }
+  58%,
+  59% {
+    opacity: 1;
+  }
+  59.1%,
+  59.9% {
+    opacity: 0;
+  }
+  60%,
+  61.4% {
+    opacity: 1;
+  }
+  61.5%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes stormFlash {
+  0%,
+  9.9% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.5;
+  }
+  16% {
+    opacity: 0;
+  }
+  57.9% {
+    opacity: 0;
+  }
+  58% {
+    opacity: 0.34;
+  }
+  64%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes emberRise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  12% {
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(7vw, -46svh, 0);
+  }
+}
+
+@keyframes eyesSnap {
+  from {
+    opacity: 0.4;
+    transform: scaleY(0.1);
+  }
+  35% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes redOut {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes cutOut {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes impactOut {
+  from {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes kickA {
+  0% {
+    transform: translate3d(6px, -4px, 0) scale(1.02);
+  }
+  14% {
+    transform: translate3d(-5px, 5px, 0) scale(1.02);
+  }
+  28% {
+    transform: translate3d(4px, 3px, 0) scale(1.02);
+  }
+  42% {
+    transform: translate3d(-4px, -2px, 0) scale(1.02);
+  }
+  58% {
+    transform: translate3d(2px, -2px, 0) scale(1.02);
+  }
+  76% {
+    transform: translate3d(-1px, 1px, 0) scale(1.02);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.02);
+  }
+}
+
+@keyframes kickB {
+  0% {
+    transform: translate3d(-4px, 3px, 0) scale(1.02);
+  }
+  20% {
+    transform: translate3d(4px, -3px, 0) scale(1.02);
+  }
+  40% {
+    transform: translate3d(-3px, -2px, 0) scale(1.02);
+  }
+  60% {
+    transform: translate3d(2px, 2px, 0) scale(1.02);
+  }
+  80% {
+    transform: translate3d(-1px, 0, 0) scale(1.02);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.02);
+  }
+}
+
+@keyframes kickC {
+  0% {
+    transform: translate3d(7px, 5px, 0) scale(1.02);
+  }
+  12% {
+    transform: translate3d(-7px, -4px, 0) scale(1.02);
+  }
+  24% {
+    transform: translate3d(5px, -5px, 0) scale(1.02);
+  }
+  38% {
+    transform: translate3d(-4px, 4px, 0) scale(1.02);
+  }
+  54% {
+    transform: translate3d(3px, 2px, 0) scale(1.02);
+  }
+  72% {
+    transform: translate3d(-2px, -1px, 0) scale(1.02);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.02);
+  }
+}
+
+@keyframes rumble {
+  0% {
+    transform: translate3d(1px, 0, 0) scale(1.02);
+  }
+  25% {
+    transform: translate3d(0, -1px, 0) scale(1.02);
+  }
+  50% {
+    transform: translate3d(-1px, 1px, 0) scale(1.02);
+  }
+  75% {
+    transform: translate3d(0, 1px, 0) scale(1.02);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.02);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky,
+  .kalaEyesImg,
+  .heroWind,
+  .bolt,
+  .stormFlashInner,
+  .ember,
+  .root[data-phase] .gem,
+  .root[data-phase] .shaker,
+  .root[data-phase] .redFlash,
+  .root[data-phase] .cutFlash {
+    animation: none;
+  }
+
+  .root[data-phase="1"] .closeEyes {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

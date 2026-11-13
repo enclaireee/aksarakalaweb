@@ -1,0 +1,627 @@
+/* Forgotten: the morning after. Everything scroll-driven reads the Scene's
+   custom properties (--p plus the named vars declared in ForgottenScene.tsx). */
+
+.stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* --u: CSS px per source pixel for world art; --pu: for the big portrait and
+     lontar; --dp: for the dialogue portrait. Stepped so pixels stay square. */
+  --u: 3px;
+  --pu: 4px;
+  --dp: 2px;
+  --lw: min(88vw, calc(120 * var(--pu)));
+  background: #090612;
+}
+
+@media (min-width: 640px) and (min-height: 560px) {
+  .stage {
+    --u: 4px;
+    --pu: 5px;
+    --dp: 3px;
+  }
+}
+@media (min-width: 1024px) and (min-height: 680px) {
+  .stage {
+    --u: 5px;
+    --pu: 6px;
+  }
+}
+@media (min-width: 1440px) and (min-height: 800px) {
+  .stage {
+    --u: 6px;
+    --pu: 7px;
+  }
+}
+
+/* ---------- world ---------- */
+
+.world {
+  position: absolute;
+  inset: 0;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    #0a0c1b 0%,
+    #151d35 22%,
+    #2e3f5e 42%,
+    #6d84a3 58%,
+    #b4c6da 68%,
+    #d5e2f0 74%
+  );
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #d5e2f0;
+}
+
+.backdrop {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 27%;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: bottom;
+}
+
+.far {
+  filter: grayscale(1) sepia(0.35) hue-rotate(175deg) brightness(0.78);
+  transform: translate3d(0, calc(var(--p) * 2.5%), 0);
+}
+
+.mid {
+  filter: grayscale(0.85) hue-rotate(-40deg) brightness(0.7);
+  transform: translate3d(0, calc(var(--p) * 1%), 0) scale(1.02);
+  transform-origin: 50% 100%;
+}
+
+.ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 70%;
+  filter: grayscale(0.78) brightness(0.45);
+}
+
+.groundShade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 66%;
+  bottom: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(40, 56, 84, 0) 0%,
+    rgba(26, 36, 60, 0.35) 18%,
+    rgba(9, 6, 18, 0.82) 100%
+  );
+}
+
+.kelir {
+  position: absolute;
+  left: 50%;
+  bottom: calc(30% - 5 * var(--u));
+  width: calc(92 * var(--u));
+  height: calc(70 * var(--u));
+  margin-left: calc(-46 * var(--u));
+}
+
+.cloth {
+  position: absolute;
+  left: calc(6 * var(--u));
+  top: calc(10 * var(--u));
+  width: calc(80 * var(--u));
+  height: calc(44 * var(--u));
+  filter: saturate(0.7) brightness(0.8);
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.prop {
+  position: absolute;
+}
+
+.gong {
+  left: calc(-34 * var(--u));
+  bottom: 0;
+  width: calc(30 * var(--u));
+  height: calc(40 * var(--u));
+}
+
+.saron {
+  left: calc(96 * var(--u));
+  bottom: calc(-1 * var(--u));
+  width: calc(34 * var(--u));
+  height: calc(18 * var(--u));
+}
+
+.mat {
+  left: calc(58 * var(--u));
+  bottom: calc(-11 * var(--u));
+  width: calc(24 * var(--u));
+  height: calc(12 * var(--u));
+}
+
+.kendang {
+  left: calc(60 * var(--u));
+  bottom: calc(-6 * var(--u));
+  width: calc(20 * var(--u));
+  height: calc(14 * var(--u));
+}
+
+.ember {
+  position: absolute;
+  left: calc(50% + var(--x) * var(--u));
+  bottom: calc(4 * var(--u));
+  width: var(--u);
+  height: var(--u);
+  background: #f07a2a;
+  opacity: 0;
+  animation: emberRise 6s linear infinite;
+}
+
+@keyframes emberRise {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.95;
+  }
+  70% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate3d(calc(6 * var(--u)), calc(-64 * var(--u)), 0);
+    opacity: 0;
+  }
+}
+
+.mistRow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22%;
+  height: 16%;
+}
+
+.mist {
+  position: absolute;
+  width: calc(96 * var(--u));
+  height: calc(48 * var(--u));
+  opacity: 0.4;
+  animation: mistDrift 36s ease-in-out infinite alternate;
+}
+
+@keyframes mistDrift {
+  from {
+    transform: translate3d(-9vw, 0, 0);
+  }
+  to {
+    transform: translate3d(9vw, 0, 0);
+  }
+}
+
+.ash {
+  position: absolute;
+  top: -2%;
+  width: 2px;
+  height: 2px;
+  background: rgba(213, 226, 240, 0.55);
+  animation: ashFall 10s linear infinite;
+}
+
+@keyframes ashFall {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-7vw, 106vh, 0);
+  }
+}
+
+.dim {
+  position: absolute;
+  inset: 0;
+  background: #070a16;
+  opacity: calc(var(--face) * 0.64);
+}
+
+/* ---------- Beat B: the portrait ---------- */
+
+.faceBeat {
+  position: absolute;
+  inset: 0;
+  opacity: calc(var(--face) * (1 - var(--inkB)));
+}
+
+.portrait {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: calc(56 * var(--pu));
+  height: calc(56 * var(--pu));
+  transform: translate3d(-50%, calc(-50% + (1 - var(--face)) * 18px), 0);
+  box-shadow: 0 0 80px rgba(213, 226, 240, 0.16);
+}
+
+.portraitFrame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.portraitFace {
+  position: absolute;
+  inset: calc(4 * var(--pu));
+  overflow: hidden;
+}
+
+.faceImg {
+  position: absolute;
+  inset: 0;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/* Ordered-dither dissolve: four copies of Laras's portrait, each masked to one
+   quadrant of a 2x2 cell (cell = 2 source pixels), switched off in Bayer order
+   as --erase rises. A fifth unmasked copy covers mask seams until it starts. */
+.dither {
+  -webkit-mask-size: calc(4 * var(--pu)) calc(4 * var(--pu));
+  mask-size: calc(4 * var(--pu)) calc(4 * var(--pu));
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+}
+
+.dither[data-k="0"] {
+  -webkit-mask-image: none;
+  mask-image: none;
+  opacity: clamp(0, calc((0.05 - var(--erase)) * 40), 1);
+}
+.dither[data-k="1"] {
+  -webkit-mask-image: conic-gradient(from 0deg, #000 0deg 90deg, transparent 90deg 360deg);
+  mask-image: conic-gradient(from 0deg, #000 0deg 90deg, transparent 90deg 360deg);
+  opacity: clamp(0, calc((0.3 - var(--erase)) * 12), 1);
+}
+.dither[data-k="2"] {
+  -webkit-mask-image: conic-gradient(from 180deg, #000 0deg 90deg, transparent 90deg 360deg);
+  mask-image: conic-gradient(from 180deg, #000 0deg 90deg, transparent 90deg 360deg);
+  opacity: clamp(0, calc((0.52 - var(--erase)) * 12), 1);
+}
+.dither[data-k="3"] {
+  -webkit-mask-image: conic-gradient(from 90deg, #000 0deg 90deg, transparent 90deg 360deg);
+  mask-image: conic-gradient(from 90deg, #000 0deg 90deg, transparent 90deg 360deg);
+  opacity: clamp(0, calc((0.74 - var(--erase)) * 12), 1);
+}
+
+.nameplate {
+  position: absolute;
+  left: 50%;
+  top: calc(42% + 28 * var(--pu) + 12px);
+  transform: translateX(-50%);
+  margin: 0;
+  padding-left: 0.45em;
+  font-size: clamp(0.8rem, 1.5vw, 1.05rem);
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: #fce09b;
+  text-shadow: 0 2px 0 #0f0b1e;
+  opacity: calc(1 - var(--erase));
+}
+
+/* ---------- Beat C: the lontar ---------- */
+
+.lontarBeat {
+  position: absolute;
+  inset: 0;
+  opacity: var(--inkC);
+}
+
+.lontarGlow {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: calc(var(--lw) * 1.15);
+  height: calc(var(--lw) * 0.8);
+  transform: translate3d(-50%, -50%, 0);
+  opacity: 0.4;
+}
+
+.lontar {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: var(--lw);
+  height: calc(var(--lw) * 0.2);
+  transform: translate3d(-50%, -50%, 0);
+  animation: lontarSway 5.5s ease-in-out infinite;
+  filter: drop-shadow(0 calc(2 * var(--u)) 0 rgba(9, 6, 18, 0.55));
+}
+
+@keyframes lontarSway {
+  0%,
+  100% {
+    transform: translate3d(-50%, -50%, 0) rotate(-0.6deg);
+  }
+  50% {
+    transform: translate3d(-50%, calc(-50% - 6px), 0) rotate(0.6deg);
+  }
+}
+
+.lontarImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.kaRow {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--lw) * 0.085);
+  font-size: calc(var(--lw) * 0.1);
+  line-height: 1;
+  color: #2a1722;
+}
+
+.ka[data-k="1"] {
+  opacity: calc(1 - var(--k1) * 0.95);
+}
+.ka[data-k="2"] {
+  opacity: calc(1 - var(--k2) * 0.95);
+}
+.ka[data-k="3"] {
+  opacity: calc(1 - var(--k3) * 0.7);
+}
+
+/* ---------- ink ---------- */
+
+.inkWrap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* 0..4: how many of the four blot stages are in. Closes through beat B,
+     shuts completely for the cut, then opens to a ragged border for beat C. */
+  --ink: calc(var(--inkA) * 2.6 + var(--inkB) * 1.4 - var(--inkC) * 2.9);
+  animation: inkBreath 7s ease-in-out infinite alternate;
+}
+
+@keyframes inkBreath {
+  from {
+    transform: scale(1.02);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+
+.ink {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+.ink[data-k="0"] {
+  opacity: clamp(0, var(--ink), 1);
+}
+.ink[data-k="1"] {
+  opacity: clamp(0, calc(var(--ink) - 1), 1);
+}
+.ink[data-k="2"] {
+  opacity: clamp(0, calc(var(--ink) - 2), 1);
+}
+.ink[data-k="3"] {
+  opacity: clamp(0, calc(var(--ink) - 3), 1);
+}
+
+.inkFull {
+  position: absolute;
+  inset: 0;
+  background: #0a0716;
+  opacity: calc(var(--inkB) * (1 - var(--inkC)));
+}
+
+/* ---------- copy ---------- */
+
+.dialogueWrap {
+  position: absolute;
+  left: 50%;
+  bottom: max(4svh, 18px);
+  width: min(92vw, 880px);
+  transform: translate3d(-50%, calc((1 - var(--dlg)) * 28px), 0);
+  opacity: calc(var(--dlg) * (1 - var(--dlgOut)));
+}
+
+.cups {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 4px;
+  padding-right: calc(4 * var(--u));
+  opacity: var(--cups);
+}
+
+.cupsLine {
+  margin: 0 0 calc(4 * var(--u));
+  padding: 4px 10px;
+  font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fce09b;
+  background: rgba(9, 6, 18, 0.72);
+  text-align: right;
+}
+
+.table {
+  position: relative;
+  flex: none;
+  width: calc(42 * var(--u));
+  height: calc(30 * var(--u));
+}
+
+.tableImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.tableGlow {
+  position: absolute;
+  left: -40%;
+  top: -70%;
+  width: 180%;
+  height: 220%;
+  opacity: 0.55;
+}
+
+.dialogue {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 2.4vw, 28px);
+  padding: clamp(8px, 1.4vw, 16px) clamp(10px, 2vw, 24px);
+  background: #1f1b2c;
+  background-clip: padding-box;
+  border: calc(3 * var(--dp)) solid #3b2f5c;
+  border-image: url("/game/art/ui/panel_dialogue.png") 3 fill / calc(3 * var(--dp)) stretch;
+  image-rendering: pixelated;
+  box-shadow: 0 10px 0 rgba(9, 6, 18, 0.55);
+}
+
+.dlgPortrait {
+  position: relative;
+  flex: none;
+  width: calc(56 * var(--dp));
+  height: calc(56 * var(--dp));
+}
+
+.dlgFrame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.dlgFace {
+  position: absolute;
+  left: calc(4 * var(--dp));
+  top: calc(4 * var(--dp));
+  width: calc(48 * var(--dp));
+  height: calc(48 * var(--dp));
+}
+
+.dlgText {
+  min-width: 0;
+}
+
+.speaker {
+  margin: 0 0 4px;
+  font-size: clamp(0.72rem, 1.2vw, 0.95rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #fce09b;
+}
+
+.line {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.3vw, 2.5rem);
+  line-height: 1.02;
+  color: #f8f4ec;
+  text-wrap: balance;
+}
+
+.headline {
+  position: absolute;
+  left: 50%;
+  bottom: max(8svh, 40px);
+  width: min(90vw, 920px);
+  margin: 0;
+  text-align: center;
+  font-size: clamp(2.25rem, 6vw, 4.5rem);
+  line-height: 0.95;
+  color: #f8f4ec;
+  text-shadow: 0 4px 0 #0f0b1e;
+  text-wrap: balance;
+  pointer-events: none;
+}
+
+.headline::before {
+  content: "";
+  position: absolute;
+  inset: -45% -12%;
+  z-index: -1;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(9, 6, 18, 0.78) 0%,
+    rgba(9, 6, 18, 0.45) 45%,
+    rgba(9, 6, 18, 0) 72%
+  );
+}
+
+.headB {
+  opacity: calc(var(--hB) * (1 - var(--inkB)));
+  transform: translate3d(-50%, calc((1 - var(--hB)) * 20px), 0);
+}
+
+.headC {
+  opacity: var(--hC);
+  transform: translate3d(-50%, calc((1 - var(--hC)) * 20px), 0);
+  font-size: clamp(2rem, 5vw, 3.75rem);
+}
+
+.headC h2 {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: 400;
+}
+
+.by {
+  margin: 0.9em 0 0;
+  font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #fce09b;
+  text-shadow: 0 2px 0 #0f0b1e;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ember,
+  .ash,
+  .mist,
+  .lontar,
+  .inkWrap {
+    animation: none;
+  }
+  .ember {
+    opacity: 0.6;
+  }
+}

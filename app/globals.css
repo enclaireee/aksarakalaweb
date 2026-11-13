@@ -156,7 +156,56 @@ body {
   animation: sprite-idle-6 0.9s steps(6) infinite;
 }
 
+/* ---------------------------------------------------------------
+   Scroll scenes (see lib/scroll-engine.ts and components/Scene.tsx)
+   --------------------------------------------------------------- */
+.scene {
+  position: relative;
+  background: #090612;
+  --p: 0;
+  --fade: 0;
+}
+
+.scene-pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  width: 100%;
+  overflow: hidden;
+  opacity: var(--fade);
+}
+
+/* Don't burn frames on scenes that are far off-screen. */
+.scene[data-on="false"] .scene-pin {
+  visibility: hidden;
+}
+.scene[data-on="false"] * {
+  animation-play-state: paused !important;
+}
+
+@keyframes sprite-run {
+  from {
+    background-position-x: var(--sprite-from, 0px);
+  }
+  to {
+    background-position-x: var(--sprite-to, 0px);
+  }
+}
+
+.sprite {
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  animation-name: sprite-run;
+  flex: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .sprite {
+    animation: none;
+    background-position-x: var(--sprite-from, 0px);
+  }
   html {
     scroll-behavior: auto;
   }
