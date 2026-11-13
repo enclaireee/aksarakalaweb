@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { Scene, useCopy } from "@/components/Scene";
 import type { Range } from "@/lib/scroll-engine";
 import { journeyCopy, type JourneyRegionKey } from "@/lib/copy/journey";
@@ -25,9 +25,7 @@ type Vars = CSSProperties & Record<`--${string}`, string | number>;
 
 const TITLE_KEYS: JourneyRegionKey[] = [
   "sunda",
-  "galuh",
   "mataram",
-  "timur",
   "kidul",
   "kala",
 ];
@@ -49,13 +47,19 @@ const SCENE_VARS: Record<string, Range> = (() => {
     v[`t${n}Out`] =
       next === undefined ? [0.94, 0.98] : [r3(next - 0.075), r3(next - 0.035)];
   });
+  // The region before Gua Kala hands its second half to the "many more lands" line.
+  const k = REGION_P.length - 1;
+  const mid = r3((REGION_P[k - 1] + REGION_P[k]) / 2);
+  v[`t${k}Out`] = [r3(mid - 0.035), mid];
+  v.mIn = [mid, r3(mid + 0.035)];
+  v.mOut = [r3(REGION_P[k] - 0.045), r3(REGION_P[k] - 0.01)];
   return v;
 })();
 
 const FX_CLASS: Record<NonNullable<Item["fx"]>, string> = {
   sil: s.sil,
-  dim: s.dim,
-  dark: s.dark,
+  dim: "", // tint baked into the PNG
+  dark: "",
   mist: s.mist,
   glow: s.glow,
   firefly: s.firefly,
@@ -84,6 +88,8 @@ function Prop({ item }: { item: Item }) {
       aria-hidden="true"
       draggable={false}
       decoding="async"
+      data-x={item.x}
+      data-w={item.w}
       className={`${s.item} ${item.fx ? FX_CLASS[item.fx] : ""} ${
         item.flip ? s.flip : ""
       }`}
@@ -114,7 +120,7 @@ function USprite({ c }: { c: Critter }) {
   return (
     <div
       aria-hidden="true"
-      className={`sprite ${s.usprite} ${c.dim ? s.dim : ""}`}
+      className={`sprite ${s.usprite}`}
       style={style}
     />
   );
@@ -124,7 +130,12 @@ function CritterEl({ c }: { c: Critter }) {
   const style: Vars = { "--x": c.x, "--b": c.b };
   if (c.delay && c.motion !== "none") style.animationDelay = `-${c.delay}s`;
   return (
-    <div className={`${s.critter} ${MOTION_CLASS[c.motion]}`} style={style}>
+    <div
+      className={`${s.critter} ${MOTION_CLASS[c.motion]}`}
+      style={style}
+      data-x={c.x}
+      data-w={c.fw * c.scale}
+    >
       <USprite c={c} />
     </div>
   );
@@ -169,6 +180,8 @@ function Ground() {
           <div
             key={r.id}
             className={`${s.ground} ${ri === 0 ? "" : s.groundFade}`}
+            data-x={r.a - overlap}
+            data-w={r.b - r.a + overlap}
             style={{ "--x": r.a - overlap, "--w": r.b - r.a + overlap } as Vars}
           >
             {r.rows.map((row, i) => (
@@ -192,18 +205,75 @@ function Ground() {
   );
 }
 
+/** Margin in u around the screen, enough for patrol/flutter drift. */
+const CULL_PAD = 64;
+
 export function JourneyScene() {
   const t = useCopy(journeyCopy);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const cullRef = useRef<(p: number) => void>(() => {});
+
+  // The layers are up to 20 screens wide; hide everything off screen so the GPU
+  // only rasters (and animates) the strip you can see.
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const layers = [...stage.querySelectorAll<HTMLElement>(`.${s.layer}`)].map(
+      (el) => ({
+        el,
+        travel: Number(el.style.getPropertyValue("--travel")),
+        boxes: [...el.querySelectorAll<HTMLElement>("[data-x]")].map((b) => ({
+          el: b,
+          lo: Number(b.dataset.x),
+          hi: Number(b.dataset.x) + Number(b.dataset.w),
+          shown: true,
+        })),
+      })
+    );
+    let left = 0;
+    let right = 0;
+    let lastP = 0;
+    const measure = () => {
+      const u = stage.clientHeight / 270;
+      const hx = layers[0]?.el.offsetLeft ?? 0;
+      left = hx / u + CULL_PAD;
+      right = (stage.clientWidth - hx) / u + CULL_PAD;
+    };
+    const cull = (p: number) => {
+      lastP = p;
+      for (const layer of layers) {
+        const cam = p * layer.travel;
+        for (const b of layer.boxes) {
+          const show = b.hi > cam - left && b.lo < cam + right;
+          if (show === b.shown) continue;
+          b.shown = show;
+          b.el.style.display = show ? "" : "none";
+        }
+      }
+    };
+    const onResize = () => {
+      measure();
+      cull(lastP);
+    };
+    measure();
+    cullRef.current = cull;
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   return (
-    <Scene id="journey" length={480} vars={SCENE_VARS} fadeOut={0.05}>
-      <div className={s.stage}>
+    <Scene
+      id="journey"
+      length={560}
+      vars={SCENE_VARS}
+      fadeOut={0.05}
+      onProgress={(p) => cullRef.current(p)}
+    >
+      <div ref={stageRef} className={s.stage}>
         {/* Sky: one gradient per region, crossfaded by scroll */}
         <div className={`${s.sky} ${s.skyPurwa}`} />
         <div className={`${s.sky} ${s.skySunda}`} />
-        <div className={`${s.sky} ${s.skyGaluh}`} />
         <div className={`${s.sky} ${s.skyMataram}`} />
-        <div className={`${s.sky} ${s.skyTimur}`} />
         <div className={`${s.sky} ${s.skyKidul}`} />
         <div className={`${s.sky} ${s.skyKala}`} />
 
@@ -236,6 +306,8 @@ export function JourneyScene() {
           before={
             <div
               className={s.sea}
+              data-x={SEA.x}
+              data-w={SEA.w}
               style={
                 { "--x": SEA.x, "--b": SEA.b, "--w": SEA.w, "--h": SEA.h } as Vars
               }
@@ -309,6 +381,12 @@ export function JourneyScene() {
               <p className={`font-pixel ${s.line}`}>{t.regions[key].line}</p>
             </div>
           ))}
+          <div
+            className={s.title}
+            style={{ "--in": "var(--mIn)", "--out": "var(--mOut)" } as Vars}
+          >
+            <p className={`font-display ${s.openingLine}`}>{t.more}</p>
+          </div>
         </div>
       </div>
     </Scene>

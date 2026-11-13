@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
+import { downloadCopy } from "@/lib/copy/download";
 import { onActiveScene, scrollToScene } from "@/lib/scroll-engine";
-import { SCENES } from "@/lib/site";
+import { LINKS, SCENES, detectPlatform, type Platform } from "@/lib/site";
 
 const EMBERS = [
   { left: "8%", top: "72%", delay: "0s", color: "#fce09b" },
@@ -27,23 +28,29 @@ export function SiteChrome() {
   const [active, setActive] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [platform, setPlatform] = useState<Platform>("other");
+  const t = downloadCopy[lang];
 
   useEffect(() => onActiveScene(setActive), []);
 
   useEffect(() => {
-    const audio = new Audio("/assets/audio/title.ogg");
-    audio.loop = true;
-    audio.volume = 0.35;
-    audioRef.current = audio;
-    return () => {
-      audio.pause();
-      audioRef.current = null;
-    };
+    // Low-end devices (<= 4 GB RAM or <= 4 cores) skip the purely decorative extras.
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    if ((nav.deviceMemory ?? 8) <= 4 || (nav.hardwareConcurrency ?? 8) <= 4) {
+      document.documentElement.dataset.lite = "";
+    }
+    return () => audioRef.current?.pause();
   }, []);
 
   const toggleAudio = async () => {
+    // Created on first use so the track isn't fetched for visitors who never press play.
+    if (!audioRef.current) {
+      audioRef.current = new Audio("/assets/audio/title.ogg");
+      audioRef.current.loop = true;
+      audioRef.current.volume = 0.35;
+    }
     const audio = audioRef.current;
-    if (!audio) return;
     if (playing) {
       audio.pause();
       setPlaying(false);
@@ -101,7 +108,11 @@ export function SiteChrome() {
           </button>
           <button
             type="button"
-            onClick={() => scrollToScene("download", 1)}
+            onClick={() => {
+              setPlatform(detectPlatform());
+              dialogRef.current?.showModal();
+            }}
+            aria-haspopup="dialog"
             className={`font-pixel cursor-pointer border border-[#fce09b] px-3 py-1.5 text-xs tracking-wider transition-all duration-300 ${
               atEnd
                 ? "pointer-events-none opacity-0"
@@ -112,6 +123,86 @@ export function SiteChrome() {
           </button>
         </div>
       </header>
+
+      <dialog
+        ref={dialogRef}
+        aria-labelledby="download-title"
+        // A click on the backdrop lands on the <dialog> itself; inside, on its children.
+        onClick={(e) => e.target === e.currentTarget && dialogRef.current?.close()}
+        className="m-auto w-[min(26rem,calc(100vw-2rem))] border-2 border-[#fce09b] bg-[#0f0b1e] p-0 text-[#f8f4ec] shadow-[0_0_0_2px_#090612,0_0_40px_rgba(252,224,155,0.25)] backdrop:bg-[#090612]/80"
+      >
+        <div className="flex flex-col gap-4 p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 id="download-title" className="font-display text-2xl text-[#fce09b]">
+                {lang === "en" ? "Download" : "Unduh"}
+              </h2>
+              <p className="font-pixel mt-1 text-[10px] tracking-wider text-[#f8f4ec]/60">
+                {t.facts}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => dialogRef.current?.close()}
+              aria-label={lang === "en" ? "Close" : "Tutup"}
+              className="font-pixel cursor-pointer px-1 text-sm text-[#f8f4ec]/70 hover:text-[#fce09b]"
+            >
+              ✕
+            </button>
+          </div>
+
+          {(platform === "mac"
+            ? [
+                { id: "mac", href: LINKS.macArm, label: t.mac, meta: t.macMeta },
+                { id: "windows", href: LINKS.windows, label: t.windows, meta: t.windowsMeta },
+              ]
+            : [
+                { id: "windows", href: LINKS.windows, label: t.windows, meta: t.windowsMeta },
+                { id: "mac", href: LINKS.macArm, label: t.mac, meta: t.macMeta },
+              ]
+          ).map((b) => (
+            <a
+              key={b.id}
+              href={b.href}
+              onClick={() => dialogRef.current?.close()}
+              className={`flex flex-col gap-1 border-2 px-4 py-3 transition-colors ${
+                platform === "other" || platform === b.id
+                  ? "border-[#fce09b] bg-[#fce09b] text-[#090612] hover:bg-[#fff1c4]"
+                  : "border-[#f8f4ec]/30 text-[#f8f4ec] hover:border-[#fce09b] hover:text-[#fce09b]"
+              }`}
+            >
+              <span className="font-display text-lg leading-none">{b.label}</span>
+              <span className="font-pixel text-[10px] tracking-wider opacity-70">{b.meta}</span>
+            </a>
+          ))}
+
+          <a
+            href={LINKS.macZip}
+            onClick={() => dialogRef.current?.close()}
+            className="font-pixel text-xs tracking-wider text-[#f8f4ec]/75 underline-offset-4 hover:text-[#fce09b] hover:underline"
+          >
+            {t.macZip}
+          </a>
+          <div className="font-pixel flex flex-wrap gap-x-5 gap-y-2 border-t border-[#f8f4ec]/15 pt-4 text-xs tracking-wider">
+            <a
+              href={LINKS.releases}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#5ef2ff] underline-offset-4 hover:underline"
+            >
+              {t.releases} ↗
+            </a>
+            <a
+              href={LINKS.repo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#5ef2ff] underline-offset-4 hover:underline"
+            >
+              {t.source} ↗
+            </a>
+          </div>
+        </div>
+      </dialog>
 
       <nav
         aria-label={lang === "en" ? "Scenes" : "Adegan"}
@@ -151,7 +242,7 @@ export function SiteChrome() {
         {EMBERS.map((e, idx) => (
           <span
             key={idx}
-            className="animate-float-rune absolute h-1 w-1 opacity-50"
+            className="ember animate-float-rune absolute h-1 w-1 opacity-50"
             style={{
               left: e.left,
               top: e.top,

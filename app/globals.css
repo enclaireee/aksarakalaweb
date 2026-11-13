@@ -177,8 +177,14 @@ body {
 }
 
 /* Don't burn frames on scenes that are far off-screen. */
+/* Off-screen scenes skip layout and paint entirely, and drop their raster tiles. */
 .scene[data-on="false"] .scene-pin {
-  visibility: hidden;
+  content-visibility: hidden;
+}
+
+/* Low-end devices (data-lite, set by SiteChrome): fewer drifting embers. */
+[data-lite] .ember:nth-child(odd) {
+  display: none;
 }
 .scene[data-on="false"] * {
   animation-play-state: paused !important;

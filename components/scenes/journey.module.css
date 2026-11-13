@@ -128,20 +128,13 @@
   transform: scaleX(-1);
 }
 
-/* Silhouettes: flat and faint on the ridge, a little detail on the landmarks. */
+/* Silhouettes: flat and faint on the ridge, a little detail on the landmarks.
+   The tints themselves are baked into the PNGs (scripts/bake-fx.py). */
 .ridge .sil {
-  filter: brightness(0);
   opacity: 0.26;
 }
 .far .sil {
-  filter: brightness(0.22) saturate(0.6);
   opacity: 0.8;
-}
-.dim {
-  filter: brightness(0.6) saturate(0.85);
-}
-.dark {
-  filter: brightness(0.12) saturate(0.6);
 }
 .glow {
   opacity: 0.75;
@@ -166,8 +159,11 @@
 }
 
 .firefly {
-  filter: drop-shadow(0 0 calc(var(--u) * 1.5) #fce09b)
-    drop-shadow(0 0 calc(var(--u) * 0.5) #fce09b);
+  /* box-shadow rasterises once; a drop-shadow filter re-runs every frame it moves */
+  border-radius: 50%;
+  box-shadow:
+    0 0 calc(var(--u) * 1.5) calc(var(--u) * 0.5) #fce09b,
+    0 0 calc(var(--u) * 0.5) #fce09b;
   animation: firefly 5.5s ease-in-out infinite;
 }
 @keyframes firefly {
@@ -465,6 +461,13 @@
   text-shadow:
     0 4px 0 #0f0b1e,
     0 0 0.5em rgba(9, 6, 18, 0.7);
+}
+
+/* Low-end devices: no fireflies, mist or screen-blend glows. */
+:global([data-lite]) .firefly,
+:global([data-lite]) .mist,
+:global([data-lite]) .glow {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

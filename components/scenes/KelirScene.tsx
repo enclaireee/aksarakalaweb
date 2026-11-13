@@ -97,7 +97,7 @@ export function KelirScene() {
   return (
     <Scene
       id="kelir"
-      length={280}
+      length={420}
       fadeOut={0.03}
       vars={{
         sem: [0.04, 0.12],

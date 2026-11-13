@@ -9,7 +9,7 @@ import styles from "./bosses.module.css";
 const ART = "/game/art";
 
 /* ------------------------------------------------------------------ */
-/* Scroll layout: one horde beat, then one slice of scroll per boss.   */
+/* Scroll layout: horde beat, one slice per boss, then "many more".    */
 /* ------------------------------------------------------------------ */
 const HORDE_END = 0.15;
 const SLICE = 0.17;
@@ -49,29 +49,10 @@ const BOSSES: Boss[] = [
     ],
   },
   {
-    id: "barma_wijaya",
-    fw: 56,
-    fh: 64,
-    side: "right",
-    c1: "#f7c04a",
-    c2: "#b3261e",
-    motif: "parang",
-    skyline: [
-      ["props/tree_teak_galuh.png", 30],
-      ["props/lantern_galuh.png", 16],
-      ["props/tree_teak_galuh.png", 22],
-      ["props/lantern_galuh.png", 13],
-      ["props/lantern_galuh.png", 13],
-      ["props/tree_teak_galuh.png", 20],
-      ["props/lantern_galuh.png", 16],
-      ["props/tree_teak_galuh.png", 32],
-    ],
-  },
-  {
     id: "bandung_bondowoso",
     fw: 64,
     fh: 72,
-    side: "left",
+    side: "right",
     c1: "#ecc790",
     c2: "#8a5a34",
     motif: "stone",
@@ -91,7 +72,7 @@ const BOSSES: Boss[] = [
     id: "buto_ijo",
     fw: 80,
     fh: 80,
-    side: "right",
+    side: "left",
     c1: "#ffb347",
     c2: "#b4541a",
     motif: "cinder",
@@ -109,7 +90,7 @@ const BOSSES: Boss[] = [
     id: "nameless_hunter",
     fw: 64,
     fh: 72,
-    side: "left",
+    side: "right",
     c1: "#cfd8e6",
     c2: "#4a5568",
     motif: "ash",
@@ -125,7 +106,6 @@ const BOSSES: Boss[] = [
   },
 ];
 
-const LAST = BOSSES.length - 1;
 const sliceStart = (i: number) => HORDE_END + i * SLICE;
 /** Scroll point where boss i roars (once per pass). */
 const roarAt = (i: number) => sliceStart(i) + 0.1;
@@ -140,9 +120,10 @@ BOSSES.forEach((_, i) => {
   VARS[`i${i}`] = [s, s + 0.03]; // layer in
   VARS[`b${i}`] = [s + 0.035, s + 0.09]; // silhouette -> full colour
   VARS[`t${i}`] = [s + 0.05, s + 0.085]; // name + line
-  // The last boss leaves with the scene's own fade to black.
-  VARS[`o${i}`] = i === LAST ? [1.01, 1.02] : [s + 0.14, s + SLICE];
+  VARS[`o${i}`] = [s + 0.14, s + SLICE];
 });
+const MORE_START = sliceStart(BOSSES.length);
+VARS.more = [MORE_START + 0.01, MORE_START + 0.05];
 
 /* ------------------------------------------------------------------ */
 /* The horde                                                           */
@@ -331,7 +312,7 @@ const MOTES = Array.from({ length: 16 }, (_, i) => ({
 
 export function BossesScene() {
   const t = useCopy(BOSSES_COPY);
-  // 0 = horde, 1..5 = boss slices. Only neighbours of the current act are mounted.
+  // 0 = horde, 1..n = boss slices. Only neighbours of the current act are mounted.
   const [act, setAct] = useState(0);
   const [roar, setRoar] = useState(-1);
   const actRef = useRef(0);
@@ -349,7 +330,7 @@ export function BossesScene() {
     const fired = firedRef.current;
     for (let i = 0; i < BOSSES.length; i++) {
       const at = roarAt(i);
-      const end = i === LAST ? 2 : sliceStart(i) + SLICE;
+      const end = sliceStart(i) + SLICE;
       if (p >= at && p < end) {
         if (!fired[i]) {
           fired[i] = true;
@@ -363,7 +344,7 @@ export function BossesScene() {
   };
 
   return (
-    <Scene id="bosses" length={440} vars={VARS} onProgress={onProgress}>
+    <Scene id="bosses" length={600} vars={VARS} onProgress={onProgress}>
       <div className={styles.stage}>
         {act <= 1 ? <Horde line={t.horde} /> : null}
 
@@ -393,6 +374,9 @@ export function BossesScene() {
             />
           ))}
         </div>
+        <h2 className={`${styles.hordeLine} ${styles.more} font-display`}>
+          {t.more}
+        </h2>
         <div className={styles.vignette} />
       </div>
     </Scene>

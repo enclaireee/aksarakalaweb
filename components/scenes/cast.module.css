@@ -52,6 +52,8 @@
 .world {
   position: absolute;
   inset: 0;
+  /* time slows: the world drains (a filter, not a full-screen blend layer) */
+  filter: saturate(calc(1 - var(--sl) * 0.78));
 }
 
 .shaking {
@@ -371,15 +373,6 @@
 }
 
 /* ---------- slowed time ---------- */
-
-.desat {
-  position: absolute;
-  inset: 0;
-  background: #7f7f7f;
-  mix-blend-mode: saturation;
-  opacity: calc(var(--sl) * 0.78);
-  pointer-events: none;
-}
 
 .dimmer {
   position: absolute;

@@ -145,6 +145,13 @@
   transform: translate3d(-50%, calc((1 - var(--lIn, 0)) * 18px), 0);
 }
 
+/* Closing beat: same treatment as the horde line, driven by --more. */
+.more {
+  top: 42svh;
+  opacity: var(--more, 0);
+  transform: translate3d(-50%, calc((1 - var(--more, 0)) * 18px), 0);
+}
+
 /* =====================================================================
    Boss reveals
    ===================================================================== */

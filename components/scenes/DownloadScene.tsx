@@ -3,26 +3,12 @@
 import { useSyncExternalStore, type CSSProperties } from "react";
 import { Scene, Sprite, useCopy } from "@/components/Scene";
 import { downloadCopy } from "@/lib/copy/download";
-import { LINKS } from "@/lib/site";
+import { LINKS, detectPlatform, type Platform } from "@/lib/site";
 import s from "./download.module.css";
 
 const ART = "/game/art/";
 
-type Platform = "windows" | "mac" | "other";
-
 const subscribeNever = () => () => {};
-
-function detectPlatform(): Platform {
-  const nav = navigator as Navigator & {
-    userAgentData?: { platform?: string };
-  };
-  const hint = `${nav.userAgentData?.platform ?? ""} ${nav.userAgent}`.toLowerCase();
-  if (/android|iphone|ipad|ipod/.test(hint)) return "other";
-  if (/windows|win32|win64/.test(hint)) return "windows";
-  // iPadOS reports itself as a Mac; a touch screen gives it away.
-  if (hint.includes("mac")) return nav.maxTouchPoints > 1 ? "other" : "mac";
-  return "other";
-}
 
 const serverPlatform = (): Platform => "other";
 
@@ -84,7 +70,7 @@ export function DownloadScene() {
   return (
     <Scene
       id="download"
-      length={170}
+      length={200}
       fadeIn={0}
       fadeOut={0}
       vars={{

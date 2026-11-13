@@ -81,7 +81,7 @@ export function GateScene() {
   return (
     <Scene
       id="gate"
-      length={200}
+      length={260}
       fadeIn={0}
       vars={{
         push: [0.03, 0.97],

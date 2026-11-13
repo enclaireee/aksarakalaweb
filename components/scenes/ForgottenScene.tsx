@@ -55,7 +55,7 @@ export function ForgottenScene() {
   const t = useCopy(forgottenCopy);
 
   return (
-    <Scene id="forgotten" length={260} vars={VARS}>
+    <Scene id="forgotten" length={400} vars={VARS}>
       <div className={s.stage}>
         {/* ---------- the morning after: cold dawn over the burned kelir ---------- */}
         <div className={s.world} aria-hidden="true">

@@ -34,7 +34,9 @@ const entries = new Set<Entry>();
 const activeListeners = new Set<(id: string | null) => void>();
 
 let rafId = 0;
+let listening = false;
 let smoothY = 0;
+let lastTargetY = 0;
 let activeId: string | null = null;
 let reducedMotion = false;
 
@@ -53,13 +55,20 @@ function frame(now: number) {
   const dt = Math.min(64, lastT ? now - lastT : 16.7);
   lastT = now;
   const targetY = window.scrollY;
+  const vh = window.innerHeight;
+  // A jump of over a screen in one frame (Home key, logo click, scrollbar drag)
+  // teleports; easing it would replay every scene in between, e.g. the gate
+  // zooming back out for a second after you land on the hero.
+  const jumped = Math.abs(targetY - lastTargetY) > vh;
+  lastTargetY = targetY;
   const diff = targetY - smoothY;
   smoothY =
-    reducedMotion || Math.abs(diff) < 0.5
+    reducedMotion || jumped || Math.abs(diff) < 0.5
       ? targetY
       : smoothY + diff * (1 - Math.exp(-dt / SMOOTH_MS));
+  // Fast flicks: never trail more than a screen behind what's actually on screen.
+  smoothY = Math.min(targetY + vh, Math.max(targetY - vh, smoothY));
   const lag = targetY - smoothY;
-  const vh = window.innerHeight;
 
   // Read phase
   const measured: Array<[Entry, number, boolean, boolean]> = [];
@@ -68,7 +77,8 @@ function frame(now: number) {
     const top = rect.top + lag; // where the section top sits at the smoothed position
     const span = Math.max(1, rect.height - vh);
     const p = clamp01(-top / span);
-    const on = top < vh * 1.25 && top + rect.height > -vh * 0.25;
+    // Visibility follows the real position: the pin is on screen there, not at the smoothed one.
+    const on = rect.top < vh * 1.25 && rect.bottom > -vh * 0.25;
     const centred = top <= vh * 0.5 && top + rect.height > vh * 0.5;
     measured.push([e, p, on, centred]);
   }
@@ -106,26 +116,38 @@ function frame(now: number) {
     activeListeners.forEach((cb) => cb(activeId));
   }
 
+  // Settled: sleep until the next scroll/resize instead of spinning 60 times a second.
+  rafId = smoothY === targetY ? 0 : requestAnimationFrame(frame);
+}
+
+function wake() {
+  if (rafId) return;
+  lastT = 0;
   rafId = requestAnimationFrame(frame);
 }
 
 function start() {
-  if (rafId) return;
-  smoothY = window.scrollY;
-  lastT = 0;
+  if (listening) return;
+  listening = true;
+  smoothY = lastTargetY = window.scrollY;
   reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  rafId = requestAnimationFrame(frame);
+  window.addEventListener("scroll", wake, { passive: true });
+  window.addEventListener("resize", wake);
 }
 
 function stop() {
   cancelAnimationFrame(rafId);
   rafId = 0;
+  listening = false;
+  window.removeEventListener("scroll", wake);
+  window.removeEventListener("resize", wake);
 }
 
 export function registerScene(config: SceneConfig) {
   const entry: Entry = { ...config, lastP: -1, lastOn: null };
   entries.add(entry);
   start();
+  wake();
   return () => {
     entries.delete(entry);
     if (entries.size === 0) stop();

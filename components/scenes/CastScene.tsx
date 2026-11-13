@@ -175,7 +175,7 @@ export function CastScene() {
   const heroKey = step === 6 ? 0 : step === 2 ? 1 : step;
 
   return (
-    <Scene id="cast" length={340} vars={VARS} fadeOut={0.05} onProgress={onProgress}>
+    <Scene id="cast" length={480} vars={VARS} fadeOut={0.05} onProgress={onProgress}>
       <div className={`${s.stage} ${slowed ? s.slowed : ""}`}>
         <div className={`${s.shakeBox} ${burst ? s.shaking : ""}`}>
           {/* ---------- night forest ---------- */}
@@ -294,7 +294,6 @@ export function CastScene() {
           </div>
 
           {/* time slows: the world drains and dims, the hero does not */}
-          <div className={s.desat} aria-hidden="true" />
           <div className={s.dimmer} aria-hidden="true" />
 
           {/* ---------- the one who remembers ---------- */}

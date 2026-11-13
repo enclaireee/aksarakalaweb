@@ -66,7 +66,7 @@ export function KalaScene() {
   return (
     <Scene
       id="kala"
-      length={300}
+      length={450}
       fadeOut={0}
       onProgress={onProgress}
       vars={{

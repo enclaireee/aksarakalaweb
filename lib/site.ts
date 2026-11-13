@@ -21,3 +21,18 @@ export const LINKS = {
   macZip:
     "https://github.com/enclaireee/AksaraKala/releases/latest/download/AksaraKala.zip",
 } as const;
+
+export type Platform = "windows" | "mac" | "other";
+
+/** Browser-only: guess the visitor's OS so we can offer the matching build. */
+export function detectPlatform(): Platform {
+  const nav = navigator as Navigator & {
+    userAgentData?: { platform?: string };
+  };
+  const hint = `${nav.userAgentData?.platform ?? ""} ${nav.userAgent}`.toLowerCase();
+  if (/android|iphone|ipad|ipod/.test(hint)) return "other";
+  if (/windows|win32|win64/.test(hint)) return "windows";
+  // iPadOS reports itself as a Mac; a touch screen gives it away.
+  if (hint.includes("mac")) return nav.maxTouchPoints > 1 ? "other" : "mac";
+  return "other";
+}

@@ -2,7 +2,6 @@ import type { Lang } from "@/components/LanguageProvider";
 
 export type BossId =
   | "sandekala"
-  | "barma_wijaya"
   | "bandung_bondowoso"
   | "buto_ijo"
   | "nameless_hunter";
@@ -17,21 +16,19 @@ export interface BossCopy {
 
 interface BossesCopy {
   horde: string;
+  /** Closing line after the last boss. */
+  more: string;
   bosses: Record<BossId, BossCopy>;
 }
 
 export const BOSSES_COPY = {
   en: {
     horde: "Every legend you were told is waiting.",
+    more: "…and many more wait in the dark.",
     bosses: {
       sandekala: {
         name: "Sandekala",
         line: "Dusk has a shape. It is hungry.",
-      },
-      barma_wijaya: {
-        name: "Barma Wijaya",
-        epithet: "The False King",
-        line: "He wears a face that isn't his.",
       },
       bandung_bondowoso: {
         name: "Bandung Bondowoso",
@@ -50,15 +47,11 @@ export const BOSSES_COPY = {
   },
   id: {
     horde: "Semua legenda yang pernah diceritakan padamu, kini menanti.",
+    more: "…dan masih banyak lagi yang menanti dalam gelap.",
     bosses: {
       sandekala: {
         name: "Sandekala",
         line: "Senja punya wujud. Dan ia lapar.",
-      },
-      barma_wijaya: {
-        name: "Barma Wijaya",
-        epithet: "Sang Raja Palsu",
-        line: "Wajah yang ia kenakan bukan miliknya.",
       },
       bandung_bondowoso: {
         name: "Bandung Bondowoso",

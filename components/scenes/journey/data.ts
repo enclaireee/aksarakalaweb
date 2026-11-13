@@ -207,8 +207,17 @@ function put(
   scale: number,
   extra: Partial<Item> = {}
 ) {
+  // Colour fx are baked into tinted copies (scripts/bake-fx.py): a CSS filter on
+  // every prop is a GPU pass per frame. The ridge silhouettes are pure black.
+  const fx = extra.fx;
+  const tone =
+    fx === "sil" && layer === "ridge"
+      ? "black"
+      : fx === "sil" || fx === "dim" || fx === "dark"
+        ? fx
+        : null;
   LAYER_ITEMS[layer].push({
-    src: def[0],
+    src: tone ? def[0].replace(/\.png$/, `.${tone}.png`) : def[0],
     w: r1(def[1] * scale),
     h: r1(def[2] * scale),
     x: r1(x),
@@ -265,6 +274,7 @@ function critter(
   const [lo, hi] = span(layer, region);
   LAYER_CRITTERS[layer].push({
     ...c,
+    src: c.dim ? c.src.replace(/\.png$/, ".dim.png") : c.src,
     x: r1(lo + t * (hi - lo)),
     delay: c.delay ?? r1(rnd() * 3),
   });

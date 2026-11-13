@@ -35,7 +35,7 @@ export function PathsScene() {
   const t = useCopy(PATHS_COPY);
 
   return (
-    <Scene id="paths" length={170} vars={VARS}>
+    <Scene id="paths" length={240} vars={VARS}>
       <div className={styles.stage}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
