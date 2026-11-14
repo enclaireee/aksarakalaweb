@@ -1,5 +1,5 @@
-/* GameScene: the game, played by scrolling. Reads --walk, --black,
-   --blackOut, --enter and --app from the Scene. */
+/* GameScene: the game, played by scrolling. Reads --enter, --app and
+   --zoom from the Scene. */
 
 .stage {
   /* One source pixel in CSS px: a 400x400 window of the game covers the viewport. */
@@ -90,12 +90,6 @@
   will-change: transform;
 }
 
-/* camX (the world x under the hero) runs 240 -> 2160 through the village. */
-.town {
-  width: calc(2400 * var(--u));
-  transform: translate3d(calc(-1 * (240 + var(--walk, 0) * 1920) * var(--u)), 0, 0);
-}
-
 .forest {
   width: calc(1920 * var(--u));
   transform: translate3d(calc(-1 * (820 + var(--enter, 0) * 260) * var(--u)), 0, 0);
@@ -126,38 +120,10 @@
   z-index: 60;
   pointer-events: none;
   mix-blend-mode: multiply;
-  /* village: late afternoon, a light warm grade that keeps the art's own colour */
-  background:
-    radial-gradient(ellipse 70% 90% at 0% 10%, #fffaf0 0%, rgba(255, 250, 240, 0) 70%),
-    linear-gradient(100deg, #fff0d8 0%, #f8e6d2 55%, #e6dcee 100%);
-}
-
-/* forest: Cast's night, moonlight falling in from the top left */
-[data-area="forest"] .night {
+  /* Cast's night, moonlight falling in from the top left */
   background:
     radial-gradient(ellipse 60% 70% at 18% 0%, #d6e4ff 0%, rgba(214, 228, 255, 0) 75%),
     linear-gradient(170deg, #93a8dc 0%, #6c82c0 45%, #45589a 100%);
-}
-
-/* Cloud shadows drifting over the village. */
-[data-area="town"] .night::after {
-  content: "";
-  position: absolute;
-  inset: 0 -60%;
-  background:
-    radial-gradient(ellipse 18% 30% at 20% 30%, rgba(70, 80, 120, 0.22), transparent 70%),
-    radial-gradient(ellipse 22% 26% at 62% 70%, rgba(70, 80, 120, 0.2), transparent 70%),
-    radial-gradient(ellipse 16% 34% at 92% 24%, rgba(70, 80, 120, 0.18), transparent 70%);
-  animation: clouds 38s linear infinite;
-}
-
-@keyframes clouds {
-  from {
-    transform: translate3d(-18%, 0, 0);
-  }
-  to {
-    transform: translate3d(18%, 0, 0);
-  }
 }
 
 /* Light pools, added back on top of the dark. */
@@ -423,11 +389,6 @@
   animation: mist 46s linear infinite;
 }
 
-/* village daylight: only a faint haze */
-[data-area="town"] .mist {
-  --mistA: 0.08;
-}
-
 @keyframes mist {
   0% {
     opacity: 0;
@@ -488,12 +449,7 @@
   animation: firefly 6s ease-in-out infinite;
 }
 
-/* at dusk only every third one is out yet */
-[data-area="town"] .firefly:not(:nth-child(3n)) {
-  display: none;
-}
-
-[data-area="forest"] .firefly:nth-child(odd) {
+.firefly:nth-child(odd) {
   background: #c8fbff;
   box-shadow: 0 0 calc(3 * var(--u)) calc(var(--u) / 2) rgba(94, 242, 255, 0.7);
 }
@@ -552,12 +508,6 @@
     radial-gradient(ellipse 75% 70% at 50% 48%, rgba(6, 6, 15, 0) 55%, rgba(6, 6, 15, 0.5) 85%, rgba(6, 6, 15, 0.82) 100%);
 }
 
-[data-area="town"] .shade {
-  background:
-    linear-gradient(180deg, rgba(9, 6, 18, 0.5) 0%, rgba(9, 6, 18, 0) 18%),
-    radial-gradient(ellipse 80% 75% at 50% 48%, rgba(58, 33, 74, 0) 58%, rgba(58, 33, 74, 0.4) 86%, rgba(27, 20, 51, 0.7) 100%);
-}
-
 /* --- overlays --------------------------------------------------------- */
 .vignette {
   position: absolute;
@@ -577,15 +527,6 @@
 
 .slow .vignette {
   opacity: 1;
-}
-
-.black {
-  position: absolute;
-  inset: 0;
-  z-index: 6;
-  pointer-events: none;
-  background: #090612;
-  opacity: calc(var(--black, 0) * (1 - var(--blackOut, 0)));
 }
 
 /* --- HUD: the game's own bars, at whole-pixel scale ------------------- */
@@ -756,8 +697,7 @@
 @media (prefers-reduced-motion: reduce) {
   .shaking,
   .alert,
-  .light,
-  .night::after {
+  .light {
     animation: none;
   }
   .air {

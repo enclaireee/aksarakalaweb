@@ -8,11 +8,11 @@ import { PxSprite } from "./cast/PxSprite";
 import s from "./game.module.css";
 
 /*
- * The game, played by scrolling. A pinned "game screen" over two real areas
- * rendered from the Godot project (public/assets/pixel/world_*.png, 480px tall,
- * the road through the middle): scroll walks the hero through a Tatar Sunda
- * village, an area change drops you on a forest road, and the fight plays out
- * one beat per scroll step. Positions are source pixels (--u) from the
+ * The game, played by scrolling. A pinned "game screen" over a real area
+ * rendered from the Godot project (public/assets/pixel/world_leuweung.png,
+ * 480px tall, the road through the middle): the hero walks into a moonlit
+ * clearing, is ambushed, and the fight plays out one beat per scroll step.
+ * (Walking the world is Journey's job; this scene is the fight.) Positions are source pixels (--u) from the
  * screen's centre; the hero's feet sit on (0, 0).
  */
 
@@ -21,17 +21,13 @@ const HERO = `${ART}/hero_warrior.png`;
 const FACELESS = `${ART}/enemies/faceless.png`;
 
 const VARS: Record<string, Range> = {
-  walk: [0.03, 0.36], // the camera follows the hero through the village
-  black: [0.35, 0.38], // area change: fade to black...
-  blackOut: [0.39, 0.42], // ...and back in on the forest road
-  enter: [0.4, 0.5],
-  app: [0.46, 0.56], // enemies close in
-  zoom: [0.47, 0.56], // the camera leans in for the fight
+  enter: [0.02, 0.22], // the hero walks into the clearing
+  app: [0.16, 0.31], // enemies close in
+  zoom: [0.17, 0.31], // the camera leans in for the fight
 };
 
 /** Light pools in world pixels: x, y, radius, kind. Warm = lamp, cool = spirit. */
 type Light = [number, number, number, "warm" | "cool"];
-// Doorways and lamps along the village road, lit for dusk.
 // The clearing (see public/assets/pixel/leuweung_clearing.png): stone lanterns
 // and the shrine's spirit light.
 const FOREST_LIGHTS: Light[] = [
@@ -57,21 +53,20 @@ const MISTS = [
 
 /**
  * Steps, entered when --p crosses each cut:
- * 0 village · 1 explore · 2 forest · 3 enemies come · 4-6 the combo ·
- * 7 wind-up · 8 dodge (perfect) · 9 counter
+ * 0 arrival · 1 enemies come · 2-4 the combo · 5 wind-up · 6 dodge (perfect) · 7 counter
  */
-const CUTS = [0.15, 0.385, 0.47, 0.56, 0.61, 0.66, 0.73, 0.785, 0.84];
+const CUTS = [0.17, 0.31, 0.39, 0.47, 0.58, 0.66, 0.75];
 
 type Pose = { row: number; start?: number; frames: number; fps: number; once?: boolean };
 // hero_warrior.png: row 1 side idle, 4 side walk, 6-8 the side combo, 9 dodge.
 const IDLE: Pose = { row: 1, frames: 4, fps: 5 };
 const WALK: Pose = { row: 4, frames: 6, fps: 10 };
 const HERO_POSE: Record<number, Pose> = {
-  4: { row: 6, frames: 6, fps: 16, once: true },
-  5: { row: 7, frames: 6, fps: 16, once: true },
-  6: { row: 8, frames: 6, fps: 14, once: true },
-  8: { row: 9, frames: 6, fps: 14, once: true },
-  9: { row: 8, frames: 6, fps: 16, once: true },
+  2: { row: 6, frames: 6, fps: 16, once: true },
+  3: { row: 7, frames: 6, fps: 16, once: true },
+  4: { row: 8, frames: 6, fps: 14, once: true },
+  6: { row: 9, frames: 6, fps: 14, once: true },
+  7: { row: 8, frames: 6, fps: 16, once: true },
 };
 
 // faceless.png: rows 0 idle, 1 walk, 2 attack (0-1 wind-up, 2-3 strike), 3 hurt.
@@ -92,9 +87,9 @@ interface Foe {
   dies: number;
 }
 const FOES: Foe[] = [
-  { x: 2, y: 0, x2: 2, y2: 0, lag: 0, dies: 6 },
-  { x: 28, y: -16, x2: 4, y2: -7, lag: 40, dies: 9 },
-  { x: 34, y: 15, x2: 14, y2: 11, lag: 80, dies: 9 },
+  { x: 2, y: 0, x2: 2, y2: 0, lag: 0, dies: 4 },
+  { x: 28, y: -16, x2: 4, y2: -7, lag: 40, dies: 7 },
+  { x: 34, y: 15, x2: 14, y2: 11, lag: 80, dies: 7 },
 ];
 
 const at = (x: number, y: number) => ({ "--x": x, "--y": y }) as CSSProperties;
@@ -151,10 +146,9 @@ function Dmg({ x, y, n, kind = "" }: { x: number; y: number; n: number; kind?: s
 
 function caption(step: number) {
   if (step === 0) return "genre";
-  if (step === 1) return "explore";
-  if (step <= 3) return "fight";
-  if (step <= 6) return "combo";
-  return step === 7 ? "dodge" : "perfect";
+  if (step === 1) return "fight";
+  if (step <= 4) return "combo";
+  return step === 5 ? "dodge" : "perfect";
 }
 
 export function GameScene() {
@@ -184,10 +178,9 @@ export function GameScene() {
     }
   };
 
-  const forest = step >= 2;
-  const hx = step < 2 ? 0 : step === 8 ? -64 : -30;
+  const hx = step === 6 ? -64 : -30;
   const pose = HERO_POSE[step];
-  const shake = step === 6 || step === 9; // the finisher and the counter land hard
+  const shake = step === 4 || step === 7; // the finisher and the counter land hard
   const cap = caption(step);
 
   const hero = (p: Pose, key: string | number) => (
@@ -195,25 +188,16 @@ export function GameScene() {
   );
 
   return (
-    <Scene id="game" length={500} vars={VARS} onProgress={onProgress}>
+    <Scene id="game" length={360} vars={VARS} onProgress={onProgress}>
       <div
         ref={stageRef}
-        className={`${s.stage} ${step === 8 ? s.slow : ""}`}
+        className={`${s.stage} ${step === 6 ? s.slow : ""}`}
         data-moving="false"
-        data-area={forest ? "forest" : "town"}
       >
         <div className={s.cam}>
         <div key={shake ? step : "still"} className={`${s.screen} ${shake ? s.shaking : ""}`}>
-          {/* ---------- the world: real areas, rendered from the game ---------- */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            className={`${s.world} ${s.town} pixelated`}
-            src="/assets/pixel/world_kampung.png"
-            alt=""
-            hidden={forest}
-            draggable={false}
-          />
-          <div className={`${s.world} ${s.forest}`} hidden={!forest} aria-hidden="true">
+          {/* ---------- the world: a real area, rendered from the game ---------- */}
+          <div className={`${s.world} ${s.forest}`} aria-hidden="true">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className={`${s.fill} pixelated`} src="/assets/pixel/world_leuweung.png" alt="" draggable={false} />
             {/* the fight's clearing: tree walls, a shrine and its lanterns, drawn over the road */}
@@ -227,20 +211,19 @@ export function GameScene() {
           </div>
 
           {/* ---------- enemies ---------- */}
-          {forest &&
-            FOES.map((f, i) => {
+          {FOES.map((f, i) => {
               if (step > f.dies) return null;
-              const close = step >= 7;
+              const close = step >= 5;
               const dying = step === f.dies;
-              const hit = i === 0 && (step === 4 || step === 5);
+              const hit = i === 0 && (step === 2 || step === 3);
               const p =
                 hit || dying
                   ? F_HURT
-                  : i === 1 && step === 8
+                  : i === 1 && step === 6
                     ? F_STRIKE
-                    : i === 1 && step === 7
+                    : i === 1 && step === 5
                       ? F_WIND
-                      : step === 3 || (i === 2 && step === 7)
+                      : step === 1 || (i === 2 && step === 5)
                         ? F_WALK
                         : F_IDLE;
               const y = close ? f.y2 : f.y;
@@ -255,7 +238,7 @@ export function GameScene() {
                   <div key={step} className={`${hit || dying ? s.knock : ""} ${dying ? s.dying : ""}`}>
                     <PxSprite src={FACELESS} fw={32} fh={32} sw={128} sh={128} flip {...p} />
                   </div>
-                  {i === 1 && step === 7 && (
+                  {i === 1 && step === 5 && (
                     <PxSprite
                       className={s.alert}
                       src={`${ART}/ambient/emotes.png`}
@@ -278,41 +261,37 @@ export function GameScene() {
               hero(pose, step)
             ) : (
               <>
-                <div className={s.walkPose}>{hero(step <= 2 ? WALK : IDLE, "walk")}</div>
+                <div className={s.walkPose}>{hero(step === 0 ? WALK : IDLE, "walk")}</div>
                 <div className={s.idlePose}>{hero(IDLE, "idle")}</div>
               </>
             )}
           </div>
 
-          {/* ---------- light: dusk in the village, moonlight in the forest ---------- */}
+          {/* ---------- light: moonlight, lanterns and the shrine ---------- */}
           <div className={s.night} aria-hidden="true" />
-          {forest && (
-            <>
-              <Lights lights={FOREST_LIGHTS} className={s.forest} />
-              <span className={`${s.pos} ${s.heroLight}`} style={at(hx, -10)} aria-hidden="true" />
-            </>
-          )}
+          <Lights lights={FOREST_LIGHTS} className={s.forest} />
+          <span className={`${s.pos} ${s.heroLight}`} style={at(hx, -10)} aria-hidden="true" />
 
           {/* ---------- the combo ---------- */}
-          {(step === 4 || step === 5 || step === 6) && (
+          {step >= 2 && step <= 4 && (
             <>
               <Fx x={-20} y={-14}>
-                {smear(["smear_core_warrior", "smear_light_warrior", "smear_finisher_warrior"][step - 4])}
+                {smear(["smear_core_warrior", "smear_light_warrior", "smear_finisher_warrior"][step - 2])}
               </Fx>
               <Fx x={0} y={-14} delay={0.06}>
                 {spark(0.06)}
               </Fx>
-              <Dmg x={4} y={-34} n={[14, 17, 41][step - 4]} kind={step === 6 ? s.big : ""} />
+              <Dmg x={4} y={-34} n={[14, 17, 41][step - 2]} kind={step === 4 ? s.big : ""} />
             </>
           )}
-          {step === 6 && (
+          {step === 4 && (
             <Fx x={2} y={-14} delay={0.3}>
               {puff(0.3)}
             </Fx>
           )}
 
           {/* ---------- the dodge ---------- */}
-          {step === 8 && (
+          {step === 6 && (
             <>
               <Fx x={-14} y={-20}>
                 {smear("enemy_smear", true)}
@@ -327,7 +306,7 @@ export function GameScene() {
           )}
 
           {/* ---------- the counter ---------- */}
-          {step === 9 && (
+          {step === 7 && (
             <>
               <Fx x={-18} y={-14}>
                 {smear("smear_finisher_warrior")}
@@ -377,30 +356,24 @@ export function GameScene() {
           ))}
         </div>
         {/* the forest's own canopy, close to the camera: it slides faster than the ground */}
-        {forest && (
-          <>
-            <div className={`${s.canopy} ${s.canopyTop} pixelated`} aria-hidden="true" />
-            <div className={`${s.canopy} ${s.canopyBottom} pixelated`} aria-hidden="true" />
-          </>
-        )}
+        <div className={`${s.canopy} ${s.canopyTop} pixelated`} aria-hidden="true" />
+        <div className={`${s.canopy} ${s.canopyBottom} pixelated`} aria-hidden="true" />
         <div className={s.shade} aria-hidden="true" />
 
         {/* perfect dodge: time slows, the world drains */}
         <div className={s.vignette} aria-hidden="true" />
-        {/* area change */}
-        <div className={s.black} aria-hidden="true" />
 
         {/* ---------- the game's own HUD, once there is a fight ---------- */}
-        <div className={s.hudBox} data-on={step >= 3} aria-hidden="true">
+        <div className={s.hudBox} data-on={step >= 1} aria-hidden="true">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className={`${s.hud} pixelated`} src="/assets/pixel/hud_bars.png" alt="" draggable={false} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className={`${s.flasks} pixelated`} src="/assets/pixel/hud_flasks.png" alt="" draggable={false} />
         </div>
 
-        <div className={s.banner} data-on={step === 0 || step === 2} aria-hidden="true">
+        <div className={s.banner} data-on={step === 0} aria-hidden="true">
           <p className={`${s.bannerRegion} font-display`}>{t.region}</p>
-          <p className={`${s.bannerArea} font-pixel`}>{forest ? t.forest : t.town}</p>
+          <p className={`${s.bannerArea} font-pixel`}>{t.forest}</p>
         </div>
 
         {/* ---------- copy ---------- */}
@@ -409,10 +382,6 @@ export function GameScene() {
           <div className={s.block} data-on={cap === "genre"}>
             <h2 className={`${s.line} font-display`}>{t.genre}</h2>
             <p className={`${s.sub} font-pixel`}>{t.genreSub}</p>
-          </div>
-          <div className={s.block} data-on={cap === "explore"}>
-            <p className={`${s.line} font-display`}>{t.explore}</p>
-            <p className={`${s.sub} font-pixel`}>{t.exploreSub}</p>
           </div>
           <div className={s.block} data-on={cap === "fight"}>
             <p className={`${s.line} font-display`}>{t.fight}</p>

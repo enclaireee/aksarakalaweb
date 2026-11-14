@@ -44,7 +44,7 @@ Twilight indigo-to-amber, crisp pixel art, glowing cyan Aksara runes. Art is aut
 ## 3. Scenes
 
 1. **gate** (260): Title screen. Layered sky, far/near hills, constellation and drifting glyphs, the hero in a storm; title, one-line genre pitch and Download/See-the-game buttons.
-2. **game** (220): What the game is. Genre kicker, headline, one-line premise, four feature cards (draw to cast, real-time combat, eight classes, seven regions with the pixel Java map `public/assets/pixel/java_map.png`) and a desktop controls strip.
+2. **game** (360): The game, played by scrolling. The hero walks into a moonlit Leuweung clearing and is ambushed; the fight plays one beat per scroll step (three-hit combo, wind-up, perfect dodge with slowed time, counter) under the game's own HUD. No exploring here: walking the world is Journey's job.
 3. **cast** (480): The core mechanic. Hero fights enemies; time slows, a glyph (Ka, then Ca) is drawn as one glowing stroke scrubbed by scroll, and releases a Bolt or Burst. Ends on a Download button. Discrete steps via `onProgress`.
 4. **paths** (240): The eight classes line up as portraits with their in-game title and role, middle pair first.
 5. **journey** (560): Side-scrolling road east through the regions. Parallax layers, props, critters and a sea section; the hero walks as scroll advances, with a region name and biome line per border. Data in `components/scenes/journey/data.ts`.
