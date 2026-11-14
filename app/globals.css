@@ -190,6 +190,14 @@ body {
 .scene[data-on="false"] .scene-pin {
   content-visibility: hidden;
 }
+/* Not the gate: content-visibility throws its layers away, and on the way back
+   up they are rebuilt at the end of the push-in (near layer at 17x, the maw at
+   32x). will-change then locks that huge raster scale, so the title screen
+   flickers and drops tiles. visibility keeps the layers it built at 1x on load. */
+.scene#gate[data-on="false"] .scene-pin {
+  content-visibility: visible;
+  visibility: hidden;
+}
 
 /* Low-end devices (data-lite, set by SiteChrome): fewer drifting embers. */
 [data-lite] .ember:nth-child(odd) {
